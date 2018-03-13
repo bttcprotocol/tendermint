@@ -32,15 +32,6 @@ function getCode() {
 	fi
 }
 
-# build grpc client if needed
-if [[ "$GRPC_BROADCAST_TX" != "" ]]; then
-	if [  -f grpc_client ]; then
-		rm grpc_client
-	fi
-	echo "... building grpc_client"
-	go build -o grpc_client grpc_client.go
-fi
-
 function sendTx() {
 	TX=$1
 	set +u
@@ -57,7 +48,7 @@ function sendTx() {
 
 		RESPONSE=$(echo "$RESPONSE" | jq '.result')
 	else
-		RESPONSE=$(./grpc_client "$TX")
+		RESPONSE=$(grpc_client "$TX")
 		IS_ERR=false
 		ERROR=""
 	fi

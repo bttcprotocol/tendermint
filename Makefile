@@ -82,9 +82,13 @@ test_cover:
 	# run the go unit tests with coverage
 	bash test/test_cover.sh
 
+get_test_deps:
+	go get github.com/tendermint/abci/...
+	go build -o $(GOPATH)/bin/grpc_client test/app/grpc_client.go
+
 test_apps:
 	# run the app tests using bash
-	# requires `abci-cli` and `tendermint` binaries installed
+	# requires `grpc_cli`, `abci-cli` and `tendermint` binaries installed
 	bash test/app/test.sh
 
 test_persistence:
