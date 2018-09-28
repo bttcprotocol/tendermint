@@ -2,6 +2,7 @@ package consensus
 
 import (
 	"bytes"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"reflect"
@@ -9,7 +10,7 @@ import (
 	"sync"
 	"time"
 
-	fail "github.com/ebuchman/fail-test"
+	"github.com/ebuchman/fail-test"
 	cmn "github.com/tendermint/tendermint/libs/common"
 	"github.com/tendermint/tendermint/libs/log"
 
@@ -775,6 +776,7 @@ func (cs *ConsensusState) needProofBlock(height int64) bool {
 	}
 
 	lastBlockMeta := cs.blockStore.LoadBlockMeta(height - 1)
+	cs.Logger.Info("[STATE] app hash", "apphash", hex.EncodeToString(cs.state.AppHash), "lastBlockMeta", hex.EncodeToString(lastBlockMeta.Header.AppHash))
 	return !bytes.Equal(cs.state.AppHash, lastBlockMeta.Header.AppHash)
 }
 
@@ -879,6 +881,11 @@ func (cs *ConsensusState) defaultDecideProposal(height int64, round int) {
 	// Make proposal
 	polRound, polBlockID := cs.Votes.POLInfo()
 	proposal := types.NewProposal(height, round, blockParts.Header(), polRound, polBlockID)
+
+	proposal.Data = block.DataHash // [peppermint] add data hash to proposal
+	d := proposal.SignBytes(cs.state.ChainID)
+	cs.Logger.Info("[peppermint] New proposal", "signBytes", d)
+
 	if err := cs.privValidator.SignProposal(cs.state.ChainID, proposal); err == nil {
 		// Set fields
 		/*  fields set by setProposal and addBlockPart
@@ -1258,6 +1265,9 @@ func (cs *ConsensusState) finalizeCommit(height int64) {
 
 	cs.Logger.Info(cmn.Fmt("Finalizing commit of block with %d txs", block.NumTxs),
 		"height", block.Height, "hash", block.Hash(), "root", block.AppHash)
+	cs.Logger.Info(fmt.Sprintf("%v", block))
+	cs.Logger.Info(fmt.Sprintf("[peppermint] precommits round %v %v", cs.Round, cs.Votes.Precommits(cs.Round)))
+
 	cs.Logger.Info(cmn.Fmt("%v", block))
 
 	fail.Fail() // XXX
@@ -1268,11 +1278,21 @@ func (cs *ConsensusState) finalizeCommit(height int64) {
 		// but may differ from the LastCommit included in the next block
 		precommits := cs.Votes.Precommits(cs.CommitRound)
 		seenCommit := precommits.MakeCommit()
+		for _, precommit := range seenCommit.Precommits {
+			block.Header.Votes = append(block.Header.Votes, precommit)
+
+			if precommit != nil {
+				cs.Logger.Info(fmt.Sprintf("[peppermint] Committed vote:: Height: %v, Round: %v, VoteData %v, Sig %v", precommit.Height, precommit.Round, hex.EncodeToString(precommit.SignBytes(cs.state.ChainID)), hex.EncodeToString(precommit.Signature)))
+			}
+		}
 		cs.blockStore.SaveBlock(block, blockParts, seenCommit)
 	} else {
 		// Happens during replay if we already saved the block but didn't commit
 		cs.Logger.Info("Calling finalizeCommit on already stored block", "height", block.Height)
 	}
+
+	cs.Logger.Info(fmt.Sprintf("%v", block))
+	cs.Logger.Info(fmt.Sprintf("[peppermint] precommits round %v %v", cs.Round, cs.Votes.Precommits(cs.Round)))
 
 	fail.Fail() // XXX
 
@@ -1644,7 +1664,14 @@ func (cs *ConsensusState) signVote(type_ byte, hash []byte, header types.PartSet
 		Type:             type_,
 		BlockID:          types.BlockID{hash, header},
 	}
+
+	if cs.LockedBlock != nil {
+		cs.Logger.Info("[peppermint] sign add vote", "lockedHeaderHash", hex.EncodeToString(header.Hash), "lockedBlockDataHash", hex.EncodeToString(cs.LockedBlock.DataHash))
+		vote.Data = cs.LockedBlock.DataHash
+	}
+
 	err := cs.privValidator.SignVote(cs.state.ChainID, vote)
+	cs.Logger.Info("[peppermint] vote sign with data", "signBytes", vote.SignBytes(cs.state.ChainID))
 	return vote, err
 }
 

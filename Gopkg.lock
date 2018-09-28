@@ -43,6 +43,22 @@
   revision = "95f809107225be108efcf10a3509e4ea6ceef3c4"
 
 [[projects]]
+  digest = "1:32282b2f1ea5689b7d684abc2f0c3839ddbcb99101f053456f50f33e45106cde"
+  name = "github.com/ethereum/go-ethereum"
+  packages = [
+    "common",
+    "common/hexutil",
+    "common/math",
+    "crypto",
+    "crypto/secp256k1",
+    "crypto/sha3",
+    "rlp",
+  ]
+  pruneopts = "UT"
+  revision = "89451f7c382ad2185987ee369f16416f89c28a7d"
+  version = "v1.8.15"
+
+[[projects]]
   digest = "1:544229a3ca0fb2dd5ebc2896d3d2ff7ce096d9751635301e44e37e761349ee70"
   name = "github.com/fortytw2/leaktest"
   packages = ["."]
@@ -379,7 +395,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:c31a37cafc12315b8bd745c8ad6a006ac25350472488162a821e557b3e739d67"
+  digest = "1:322227fb0d386f50af39058cfa18d4c2359d33c2513f5f58790ccb9d78f6c84a"
   name = "golang.org/x/crypto"
   packages = [
     "bcrypt",
@@ -396,6 +412,7 @@
     "poly1305",
     "ripemd160",
     "salsa20/salsa",
+    "sha3",
   ]
   pruneopts = "UT"
   revision = "c126467f60eb25f8f27e5a981f32a87e3965053f"
@@ -508,6 +525,7 @@
     "github.com/btcsuite/btcutil/base58",
     "github.com/btcsuite/btcutil/bech32",
     "github.com/ebuchman/fail-test",
+    "github.com/ethereum/go-ethereum/crypto",
     "github.com/fortytw2/leaktest",
     "github.com/go-kit/kit/log",
     "github.com/go-kit/kit/log/level",
@@ -547,6 +565,7 @@
     "golang.org/x/crypto/nacl/secretbox",
     "golang.org/x/crypto/openpgp/armor",
     "golang.org/x/crypto/ripemd160",
+    "golang.org/x/crypto/sha3",
     "golang.org/x/net/context",
     "golang.org/x/net/netutil",
     "google.golang.org/grpc",

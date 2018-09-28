@@ -4,24 +4,27 @@
 //nolint
 package types
 
-import proto "github.com/gogo/protobuf/proto"
+import "github.com/gogo/protobuf/proto"
 import golang_proto "github.com/golang/protobuf/proto"
-import fmt "fmt"
-import math "math"
+import "fmt"
+import "math"
 import _ "github.com/gogo/protobuf/gogoproto"
 import _ "github.com/golang/protobuf/ptypes/timestamp"
-import common "github.com/tendermint/tendermint/libs/common"
+import "github.com/tendermint/tendermint/libs/common"
 
-import time "time"
 
-import bytes "bytes"
+import "time"
+
+import "bytes"
 
 import context "golang.org/x/net/context"
 import grpc "google.golang.org/grpc"
 
 import github_com_gogo_protobuf_types "github.com/gogo/protobuf/types"
 
-import io "io"
+import (
+	"io"
+)
 
 // Reference imports to suppress errors if they are not otherwise used.
 var _ = proto.Marshal
@@ -2592,6 +2595,19 @@ func (m *LastCommitInfo) GetValidators() []SigningValidator {
 	}
 	return nil
 }
+type Address = common.HexBytes
+
+type Vote struct {
+	ValidatorAddress Address   `json:"validator_address"`
+	ValidatorIndex   int       `json:"validator_index"`
+	Height           int64     `json:"height"`
+	Round            int       `json:"round"`
+	Timestamp        time.Time `json:"timestamp"`
+	Type             byte      `json:"type"`
+	BlockID          BlockID   `json:"block_id"` // zero if vote is nil.
+	Data             []byte    `json:"data"`     // extra data
+	Signature        []byte    `json:"signature"`
+}
 
 // just the minimum the app might need
 type Header struct {
@@ -2599,13 +2615,14 @@ type Header struct {
 	ChainID string    `protobuf:"bytes,1,opt,name=chain_id,json=chainId,proto3" json:"chain_id,omitempty"`
 	Height  int64     `protobuf:"varint,2,opt,name=height,proto3" json:"height,omitempty"`
 	Time    time.Time `protobuf:"bytes,3,opt,name=time,stdtime" json:"time"`
+	Votes	[]*Vote 	`protobuf:"bytes,4,opt,name=votes,json=votes,proto3" json:"votes,omitempty"`
 	// txs
-	NumTxs   int32 `protobuf:"varint,4,opt,name=num_txs,json=numTxs,proto3" json:"num_txs,omitempty"`
-	TotalTxs int64 `protobuf:"varint,5,opt,name=total_txs,json=totalTxs,proto3" json:"total_txs,omitempty"`
+	NumTxs   int32 `protobuf:"varint,5,opt,name=num_txs,json=numTxs,proto3" json:"num_txs,omitempty"`
+	TotalTxs int64 `protobuf:"varint,6,opt,name=total_txs,json=totalTxs,proto3" json:"total_txs,omitempty"`
 	// hashes
-	LastBlockHash  []byte `protobuf:"bytes,6,opt,name=last_block_hash,json=lastBlockHash,proto3" json:"last_block_hash,omitempty"`
-	ValidatorsHash []byte `protobuf:"bytes,7,opt,name=validators_hash,json=validatorsHash,proto3" json:"validators_hash,omitempty"`
-	AppHash        []byte `protobuf:"bytes,8,opt,name=app_hash,json=appHash,proto3" json:"app_hash,omitempty"`
+	LastBlockHash  []byte `protobuf:"bytes,7,opt,name=last_block_hash,json=lastBlockHash,proto3" json:"last_block_hash,omitempty"`
+	ValidatorsHash []byte `protobuf:"bytes,8,opt,name=validators_hash,json=validatorsHash,proto3" json:"validators_hash,omitempty"`
+	AppHash        []byte `protobuf:"bytes,9,opt,name=app_hash,json=appHash,proto3" json:"app_hash,omitempty"`
 	// consensus
 	Proposer             Validator `protobuf:"bytes,9,opt,name=proposer" json:"proposer"`
 	XXX_NoUnkeyedLiteral struct{}  `json:"-"`

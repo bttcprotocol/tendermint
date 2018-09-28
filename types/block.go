@@ -197,7 +197,7 @@ type Header struct {
 	ConsensusHash   cmn.HexBytes `json:"consensus_hash"`    // consensus params for current block
 	AppHash         cmn.HexBytes `json:"app_hash"`          // state after txs from the previous block
 	LastResultsHash cmn.HexBytes `json:"last_results_hash"` // root hash of all results from the txs from the previous block
-
+	Votes			[]*Vote	     `json:"votes"`
 	// consensus info
 	EvidenceHash cmn.HexBytes `json:"evidence_hash"` // evidence included in the block
 }
@@ -210,6 +210,7 @@ func (h *Header) Hash() cmn.HexBytes {
 	if h == nil || len(h.ValidatorsHash) == 0 {
 		return nil
 	}
+	//todo maybe add votes here /maybe not
 	return merkle.SimpleHashFromMap(map[string]merkle.Hasher{
 		"ChainID":     aminoHasher(h.ChainID),
 		"Height":      aminoHasher(h.Height),
@@ -241,6 +242,7 @@ func (h *Header) StringIndented(indent string) string {
 %s  LastBlockID:    %v
 %s  LastCommit:     %v
 %s  Data:           %v
+%s  Votes: 			%v
 %s  Validators:     %v
 %s  App:            %v
 %s  Consensus:       %v
@@ -255,6 +257,7 @@ func (h *Header) StringIndented(indent string) string {
 		indent, h.LastBlockID,
 		indent, h.LastCommitHash,
 		indent, h.DataHash,
+		indent, h.Votes,
 		indent, h.ValidatorsHash,
 		indent, h.AppHash,
 		indent, h.ConsensusHash,

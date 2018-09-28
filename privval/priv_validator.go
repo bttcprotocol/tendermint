@@ -9,7 +9,8 @@ import (
 	"time"
 
 	"github.com/tendermint/tendermint/crypto"
-	"github.com/tendermint/tendermint/crypto/ed25519"
+	// "github.com/tendermint/tendermint/crypto/ed25519"
+	"github.com/tendermint/tendermint/crypto/secp256k1"
 	cmn "github.com/tendermint/tendermint/libs/common"
 	"github.com/tendermint/tendermint/types"
 )
@@ -68,7 +69,7 @@ func (pv *FilePV) GetPubKey() crypto.PubKey {
 // GenFilePV generates a new validator with randomly generated private key
 // and sets the filePath, but does not call Save().
 func GenFilePV(filePath string) *FilePV {
-	privKey := ed25519.GenPrivKey()
+	privKey := secp256k1.GenPrivKey()
 	return &FilePV{
 		Address:  privKey.PubKey().Address(),
 		PubKey:   privKey.PubKey(),
@@ -309,29 +310,29 @@ func (pv *FilePV) String() string {
 
 // returns the timestamp from the lastSignBytes.
 // returns true if the only difference in the votes is their timestamp.
-func checkVotesOnlyDifferByTimestamp(lastSignBytes, newSignBytes []byte) (time.Time, bool) {
-	var lastVote, newVote types.CanonicalJSONVote
-	if err := cdc.UnmarshalJSON(lastSignBytes, &lastVote); err != nil {
-		panic(fmt.Sprintf("LastSignBytes cannot be unmarshalled into vote: %v", err))
-	}
-	if err := cdc.UnmarshalJSON(newSignBytes, &newVote); err != nil {
-		panic(fmt.Sprintf("signBytes cannot be unmarshalled into vote: %v", err))
-	}
-
-	lastTime, err := time.Parse(types.TimeFormat, lastVote.Timestamp)
-	if err != nil {
-		panic(err)
-	}
-
-	// set the times to the same value and check equality
-	now := types.CanonicalTime(time.Now())
-	lastVote.Timestamp = now
-	newVote.Timestamp = now
-	lastVoteBytes, _ := cdc.MarshalJSON(lastVote)
-	newVoteBytes, _ := cdc.MarshalJSON(newVote)
-
-	return lastTime, bytes.Equal(newVoteBytes, lastVoteBytes)
-}
+//func checkVotesOnlyDifferByTimestamp(lastSignBytes, newSignBytes []byte) (time.Time, bool) {
+//	var lastVote, newVote types.CanonicalJSONVote
+//	if err := cdc.UnmarshalJSON(lastSignBytes, &lastVote); err != nil {
+//		panic(fmt.Sprintf("LastSignBytes cannot be unmarshalled into vote: %v", err))
+//	}
+//	if err := cdc.UnmarshalJSON(newSignBytes, &newVote); err != nil {
+//		panic(fmt.Sprintf("signBytes cannot be unmarshalled into vote: %v", err))
+//	}
+//
+//	lastTime, err := time.Parse(types.TimeFormat, lastVote.Timestamp)
+//	if err != nil {
+//		panic(err)
+//	}
+//
+//	// set the times to the same value and check equality
+//	now := types.CanonicalTime(time.Now())
+//	lastVote.Timestamp = now
+//	newVote.Timestamp = now
+//	lastVoteBytes, _ := cdc.MarshalJSON(lastVote)
+//	newVoteBytes, _ := cdc.MarshalJSON(newVote)
+//
+//	return lastTime, bytes.Equal(newVoteBytes, lastVoteBytes)
+//}
 
 // returns the timestamp from the lastSignBytes.
 // returns true if the only difference in the proposals is their timestamp
