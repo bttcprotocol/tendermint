@@ -7,6 +7,7 @@ import (
 
 	"github.com/tendermint/tendermint/crypto"
 	cmn "github.com/tendermint/tendermint/libs/common"
+	"fmt"
 )
 
 //------------------------------------------------------------
@@ -51,18 +52,18 @@ func (genDoc *GenesisDoc) ValidatorHash() []byte {
 // ValidateAndComplete checks that all necessary fields are present
 // and fills in defaults for optional fields left empty
 func (genDoc *GenesisDoc) ValidateAndComplete() error {
-
+	fmt.Printf("here in validate and complete with gen doc as %v",genDoc.ConsensusParams)
 	if genDoc.ChainID == "" {
 		return cmn.NewError("Genesis doc must include non-empty chain_id")
 	}
-
-	if genDoc.ConsensusParams == nil {
-		genDoc.ConsensusParams = DefaultConsensusParams()
-	} else {
-		if err := genDoc.ConsensusParams.Validate(); err != nil {
-			return err
-		}
-	}
+	genDoc.ConsensusParams = DefaultConsensusParams()
+	//if genDoc.ConsensusParams == nil {
+	//	genDoc.ConsensusParams = DefaultConsensusParams()
+	//} else {
+	//	if err := genDoc.ConsensusParams.Validate(); err != nil {
+	//		return err
+	//	}
+	//}
 
 	if len(genDoc.Validators) == 0 {
 		return cmn.NewError("The genesis file must have at least one validator")
@@ -91,8 +92,9 @@ func GenesisDocFromJSON(jsonBlob []byte) (*GenesisDoc, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	if err := genDoc.ValidateAndComplete(); err != nil {
+		fmt.Println("___> here")
+
 		return nil, err
 	}
 

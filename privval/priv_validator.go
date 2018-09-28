@@ -218,10 +218,7 @@ func (pv *FilePV) signVote(chainID string, vote *types.Vote) error {
 	if sameHRS {
 		if bytes.Equal(signBytes, pv.LastSignBytes) {
 			vote.Signature = pv.LastSignature
-		} else if timestamp, ok := checkVotesOnlyDifferByTimestamp(pv.LastSignBytes, signBytes); ok {
-			vote.Timestamp = timestamp
-			vote.Signature = pv.LastSignature
-		} else {
+		}else {
 			err = fmt.Errorf("Conflicting data")
 		}
 		return err

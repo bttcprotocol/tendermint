@@ -2604,7 +2604,6 @@ type Vote struct {
 	Round            int       `json:"round"`
 	Timestamp        time.Time `json:"timestamp"`
 	Type             byte      `json:"type"`
-	BlockID          BlockID   `json:"block_id"` // zero if vote is nil.
 	Data             []byte    `json:"data"`     // extra data
 	Signature        []byte    `json:"signature"`
 }
