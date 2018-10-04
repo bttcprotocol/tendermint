@@ -29,7 +29,7 @@ const (
 
 // TM2PB is used for converting Tendermint ABCI to protobuf ABCI.
 // UNSTABLE
-var TM2PB = tm2pb{}
+var  TM2PB = tm2pb{}
 
 type tm2pb struct{}
 
@@ -69,6 +69,7 @@ func (tm2pb) Validator(val *Validator) abci.Validator {
 // XXX: panics on nil or unknown pubkey type
 // TODO: add cases when new pubkey types are added to crypto
 func (tm2pb) PubKey(pubKey crypto.PubKey) abci.PubKey {
+	fmt.Println("***** inside pubkey ***** %v",reflect.TypeOf(pubKey))
 	switch pk := pubKey.(type) {
 	case ed25519.PubKeyEd25519:
 		return abci.PubKey{
@@ -164,7 +165,9 @@ type pb2tm struct{}
 func (pb2tm) PubKey(pubKey abci.PubKey) (crypto.PubKey, error) {
 	// TODO: define these in crypto and use them
 	sizeEd := 32
-	sizeSecp := 33
+	//sizeSecp := 33
+	sizeSecp := 65
+	fmt.Errorf("****** the type observed is*********")
 	switch pubKey.Type {
 	case ABCIPubKeyTypeEd25519:
 		if len(pubKey.Data) != sizeEd {

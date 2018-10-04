@@ -159,6 +159,13 @@ func (pv *FilePV) SignVote(chainID string, vote *types.Vote) error {
 	return nil
 }
 
+
+
+
+
+
+
+
 // SignProposal signs a canonical representation of the proposal, along with
 // the chainID. Implements PrivValidator.
 func (pv *FilePV) SignProposal(chainID string, proposal *types.Proposal) error {
@@ -296,6 +303,16 @@ func (pv *FilePV) SignHeartbeat(chainID string, heartbeat *types.Heartbeat) erro
 	}
 	heartbeat.Signature = sig
 	return nil
+}
+
+func (pv *FilePV) SignHello(chainID string, data string) ([]byte,error) {
+	pv.mtx.Lock()
+	defer pv.mtx.Unlock()
+	sig,err := pv.PrivKey.Sign([]byte(data))
+	if err!=nil {
+		return nil,err
+	}
+	return sig,nil
 }
 
 // String returns a string representation of the FilePV.
