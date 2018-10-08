@@ -2603,7 +2603,7 @@ type Header struct {
 	ChainID string    `protobuf:"bytes,1,opt,name=chain_id,json=chainId,proto3" json:"chain_id,omitempty"`
 	Height  int64     `protobuf:"varint,2,opt,name=height,proto3" json:"height,omitempty"`
 	Time    time.Time `protobuf:"bytes,3,opt,name=time,stdtime" json:"time"`
-	Votes   string    `protobuf:"bytes,4,opt,name=votes,json=votes,proto3" json:"votes,omitempty"`
+	Votes   []byte    `protobuf:"bytes,4,opt,name=votes,json=votes,proto3" json:"votes,omitempty"`
 	// txs
 	NumTxs   int32 `protobuf:"varint,5,opt,name=num_txs,json=numTxs,proto3" json:"num_txs,omitempty"`
 	TotalTxs int64 `protobuf:"varint,6,opt,name=total_txs,json=totalTxs,proto3" json:"total_txs,omitempty"`
