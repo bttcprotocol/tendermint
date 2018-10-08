@@ -2,6 +2,7 @@ package types
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"reflect"
 	"time"
@@ -29,15 +30,21 @@ const (
 
 // TM2PB is used for converting Tendermint ABCI to protobuf ABCI.
 // UNSTABLE
-var  TM2PB = tm2pb{}
+var TM2PB = tm2pb{}
 
 type tm2pb struct{}
 
 func (tm2pb) Header(header *Header) abci.Header {
-	return abci.Header{
-		ChainID: header.ChainID,
-		Height:  header.Height,
+	reqBodyBytes := new(bytes.Buffer)
+	//TODO check if this works as supposed to when multiple validators
+	json.NewEncoder(reqBodyBytes).Encode(header.Votes)
+	reqBodyBytes.Bytes()
 
+	fmt.Printf("inside Protobuf.go %v", reqBodyBytes.String())
+	return abci.Header{
+		ChainID:  header.ChainID,
+		Height:   header.Height,
+		Votes:    reqBodyBytes.String(),
 		Time:     header.Time,
 		NumTxs:   int32(header.NumTxs), // XXX: overflow
 		TotalTxs: header.TotalTxs,
@@ -69,7 +76,7 @@ func (tm2pb) Validator(val *Validator) abci.Validator {
 // XXX: panics on nil or unknown pubkey type
 // TODO: add cases when new pubkey types are added to crypto
 func (tm2pb) PubKey(pubKey crypto.PubKey) abci.PubKey {
-	fmt.Println("***** inside pubkey ***** %v",reflect.TypeOf(pubKey))
+	fmt.Println("***** inside pubkey ***** %v", reflect.TypeOf(pubKey))
 	switch pk := pubKey.(type) {
 	case ed25519.PubKeyEd25519:
 		return abci.PubKey{

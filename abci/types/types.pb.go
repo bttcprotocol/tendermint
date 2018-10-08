@@ -12,7 +12,6 @@ import _ "github.com/gogo/protobuf/gogoproto"
 import _ "github.com/golang/protobuf/ptypes/timestamp"
 import "github.com/tendermint/tendermint/libs/common"
 
-
 import "time"
 
 import "bytes"
@@ -2595,18 +2594,8 @@ func (m *LastCommitInfo) GetValidators() []SigningValidator {
 	}
 	return nil
 }
-type Address = common.HexBytes
 
-type Vote struct {
-	ValidatorAddress Address   `json:"validator_address"`
-	ValidatorIndex   int       `json:"validator_index"`
-	Height           int64     `json:"height"`
-	Round            int       `json:"round"`
-	Timestamp        time.Time `json:"timestamp"`
-	Type             byte      `json:"type"`
-	Data             []byte    `json:"data"`     // extra data
-	Signature        []byte    `json:"signature"`
-}
+type Address = common.HexBytes
 
 // just the minimum the app might need
 type Header struct {
@@ -2614,7 +2603,7 @@ type Header struct {
 	ChainID string    `protobuf:"bytes,1,opt,name=chain_id,json=chainId,proto3" json:"chain_id,omitempty"`
 	Height  int64     `protobuf:"varint,2,opt,name=height,proto3" json:"height,omitempty"`
 	Time    time.Time `protobuf:"bytes,3,opt,name=time,stdtime" json:"time"`
-	Votes	[]*Vote 	`protobuf:"bytes,4,opt,name=votes,json=votes,proto3" json:"votes,omitempty"`
+	Votes   string    `protobuf:"bytes,4,opt,name=votes,json=votes,proto3" json:"votes,omitempty"`
 	// txs
 	NumTxs   int32 `protobuf:"varint,5,opt,name=num_txs,json=numTxs,proto3" json:"num_txs,omitempty"`
 	TotalTxs int64 `protobuf:"varint,6,opt,name=total_txs,json=totalTxs,proto3" json:"total_txs,omitempty"`
