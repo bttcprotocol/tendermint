@@ -74,7 +74,6 @@ func (tm2pb) Validator(val *Validator) abci.Validator {
 // XXX: panics on nil or unknown pubkey type
 // TODO: add cases when new pubkey types are added to crypto
 func (tm2pb) PubKey(pubKey crypto.PubKey) abci.PubKey {
-	fmt.Println("***** inside pubkey ***** %v", reflect.TypeOf(pubKey))
 	switch pk := pubKey.(type) {
 	case ed25519.PubKeyEd25519:
 		return abci.PubKey{

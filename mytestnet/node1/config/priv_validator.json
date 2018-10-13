@@ -1,0 +1,14 @@
+{
+  "address": "AEF48A6D00667C10A6F8BADC6D15F73DC344C48C",
+  "pub_key": {
+    "type": "tendermint/PubKeySecp256k1",
+    "value": "BOxvlViUagQ4R3hQquLswLrGDN9wfVIoGXOFXKIgP1Ogs5JGhNvrQZ6dsznjBFGcAemONNs7CB6tIbf8XCFCoy8="
+  },
+  "last_height": "0",
+  "last_round": "0",
+  "last_step": 0,
+  "priv_key": {
+    "type": "tendermint/PrivKeySecp256k1",
+    "value": "+eG5V3OMvAjq2L5fjiaoUSYQHjG0ig6MmHaroBmnhpw="
+  }
+}
