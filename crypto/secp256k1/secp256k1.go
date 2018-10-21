@@ -7,10 +7,9 @@ import (
 	"fmt"
 	"io"
 
-	secp256k1 "github.com/btcsuite/btcd/btcec"
-	amino "github.com/tendermint/go-amino"
+	ethCrypto "github.com/ethereum/go-ethereum/crypto"
+	"github.com/tendermint/go-amino"
 	"github.com/tendermint/tendermint/crypto"
-	"golang.org/x/crypto/ripemd160"
 )
 
 //-------------------------------------
@@ -45,20 +44,24 @@ func (privKey PrivKeySecp256k1) Bytes() []byte {
 
 // Sign creates an ECDSA signature on curve Secp256k1, using SHA256 on the msg.
 func (privKey PrivKeySecp256k1) Sign(msg []byte) ([]byte, error) {
-	priv, _ := secp256k1.PrivKeyFromBytes(secp256k1.S256(), privKey[:])
-	sig, err := priv.Sign(crypto.Sha256(msg))
+	privateObject, err := ethCrypto.ToECDSA(privKey[:])
 	if err != nil {
 		return nil, err
 	}
-	return sig.Serialize(), nil
+
+	return ethCrypto.Sign(ethCrypto.Keccak256(msg), privateObject)
 }
 
 // PubKey performs the point-scalar multiplication from the privKey on the
 // generator point to get the pubkey.
 func (privKey PrivKeySecp256k1) PubKey() crypto.PubKey {
-	_, pubkeyObject := secp256k1.PrivKeyFromBytes(secp256k1.S256(), privKey[:])
+	privateObject, err := ethCrypto.ToECDSA(privKey[:])
+	if err != nil {
+		panic(err)
+	}
+
 	var pubkeyBytes PubKeySecp256k1
-	copy(pubkeyBytes[:], pubkeyObject.SerializeCompressed())
+	copy(pubkeyBytes[:], ethCrypto.FromECDSAPub(&privateObject.PublicKey))
 	return pubkeyBytes
 }
 
@@ -107,7 +110,7 @@ var _ crypto.PubKey = PubKeySecp256k1{}
 
 // PubKeySecp256k1Size is comprised of 32 bytes for one field element
 // (the x-coordinate), plus one byte for the parity of the y-coordinate.
-const PubKeySecp256k1Size = 33
+const PubKeySecp256k1Size = 65
 
 // PubKeySecp256k1 implements crypto.PubKey.
 // It is the compressed form of the pubkey. The first byte depends is a 0x02 byte
@@ -118,13 +121,8 @@ type PubKeySecp256k1 [PubKeySecp256k1Size]byte
 
 // Address returns a Bitcoin style addresses: RIPEMD160(SHA256(pubkey))
 func (pubKey PubKeySecp256k1) Address() crypto.Address {
-	hasherSHA256 := sha256.New()
-	hasherSHA256.Write(pubKey[:]) // does not error
-	sha := hasherSHA256.Sum(nil)
-
-	hasherRIPEMD160 := ripemd160.New()
-	hasherRIPEMD160.Write(sha) // does not error
-	return crypto.Address(hasherRIPEMD160.Sum(nil))
+	// ETH compliant
+	return crypto.Address(ethCrypto.Keccak256(pubKey[1:])[12:])
 }
 
 // Bytes returns the pubkey marshalled with amino encoding.
@@ -137,15 +135,8 @@ func (pubKey PubKeySecp256k1) Bytes() []byte {
 }
 
 func (pubKey PubKeySecp256k1) VerifyBytes(msg []byte, sig []byte) bool {
-	pub, err := secp256k1.ParsePubKey(pubKey[:], secp256k1.S256())
-	if err != nil {
-		return false
-	}
-	parsedSig, err := secp256k1.ParseDERSignature(sig[:], secp256k1.S256())
-	if err != nil {
-		return false
-	}
-	return parsedSig.Verify(crypto.Sha256(msg), pub)
+	hash := ethCrypto.Keccak256(msg)
+	return ethCrypto.VerifySignature(pubKey[:], hash, sig[:64])
 }
 
 func (pubKey PubKeySecp256k1) String() string {

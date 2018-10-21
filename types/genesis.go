@@ -51,11 +51,9 @@ func (genDoc *GenesisDoc) ValidatorHash() []byte {
 // ValidateAndComplete checks that all necessary fields are present
 // and fills in defaults for optional fields left empty
 func (genDoc *GenesisDoc) ValidateAndComplete() error {
-
 	if genDoc.ChainID == "" {
 		return cmn.NewError("Genesis doc must include non-empty chain_id")
 	}
-
 	if genDoc.ConsensusParams == nil {
 		genDoc.ConsensusParams = DefaultConsensusParams()
 	} else {
@@ -91,7 +89,6 @@ func GenesisDocFromJSON(jsonBlob []byte) (*GenesisDoc, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	if err := genDoc.ValidateAndComplete(); err != nil {
 		return nil, err
 	}

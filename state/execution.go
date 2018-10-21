@@ -276,9 +276,9 @@ func getBeginBlockValidatorInfo(block *types.Block, lastValSet *types.ValidatorS
 func updateValidators(currentSet *types.ValidatorSet, abciUpdates []abci.Validator) error {
 	updates, err := types.PB2TM.Validators(abciUpdates)
 	if err != nil {
+		fmt.Errorf("error in update validators ")
 		return err
 	}
-
 	// these are tendermint types now
 	for _, valUpdate := range updates {
 		if valUpdate.VotingPower < 0 {

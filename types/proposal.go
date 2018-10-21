@@ -25,6 +25,7 @@ type Proposal struct {
 	BlockPartsHeader PartSetHeader `json:"block_parts_header"`
 	POLRound         int           `json:"pol_round"`    // -1 if null.
 	POLBlockID       BlockID       `json:"pol_block_id"` // zero if null.
+	Data             []byte        `json:"data"`         // extra data
 	Signature        []byte        `json:"signature"`
 }
 
@@ -43,10 +44,10 @@ func NewProposal(height int64, round int, blockPartsHeader PartSetHeader, polRou
 
 // String returns a string representation of the Proposal.
 func (p *Proposal) String() string {
-	return fmt.Sprintf("Proposal{%v/%v %v (%v,%v) %X @ %s}",
+	return fmt.Sprintf("Proposal{%v/%v %v (%v,%v) %X %X @ %s}",
 		p.Height, p.Round, p.BlockPartsHeader, p.POLRound,
 		p.POLBlockID,
-		cmn.Fingerprint(p.Signature), CanonicalTime(p.Timestamp))
+		cmn.Fingerprint(p.Data), cmn.Fingerprint(p.Signature), CanonicalTime(p.Timestamp))
 }
 
 // SignBytes returns the Proposal bytes for signing

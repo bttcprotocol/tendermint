@@ -2,6 +2,7 @@ package types
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"reflect"
 	"time"
@@ -34,10 +35,14 @@ var TM2PB = tm2pb{}
 type tm2pb struct{}
 
 func (tm2pb) Header(header *Header) abci.Header {
+	reqBodyBytes := new(bytes.Buffer)
+	//TODO check if this works as supposed to when multiple validators
+	json.NewEncoder(reqBodyBytes).Encode(header.Votes)
+	reqBodyBytes.Bytes()
 	return abci.Header{
-		ChainID: header.ChainID,
-		Height:  header.Height,
-
+		ChainID:  header.ChainID,
+		Height:   header.Height,
+		Votes:    reqBodyBytes.Bytes(),
 		Time:     header.Time,
 		NumTxs:   int32(header.NumTxs), // XXX: overflow
 		TotalTxs: header.TotalTxs,
@@ -45,8 +50,6 @@ func (tm2pb) Header(header *Header) abci.Header {
 		LastBlockHash:  header.LastBlockID.Hash,
 		ValidatorsHash: header.ValidatorsHash,
 		AppHash:        header.AppHash,
-
-		// Proposer: TODO
 	}
 }
 
@@ -164,7 +167,9 @@ type pb2tm struct{}
 func (pb2tm) PubKey(pubKey abci.PubKey) (crypto.PubKey, error) {
 	// TODO: define these in crypto and use them
 	sizeEd := 32
-	sizeSecp := 33
+	//sizeSecp := 33
+	// [ peppermint ]
+	sizeSecp := 65
 	switch pubKey.Type {
 	case ABCIPubKeyTypeEd25519:
 		if len(pubKey.Data) != sizeEd {

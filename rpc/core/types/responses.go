@@ -160,6 +160,7 @@ type ResultBroadcastTxCommit struct {
 	DeliverTx abci.ResponseDeliverTx `json:"deliver_tx"`
 	Hash      cmn.HexBytes           `json:"hash"`
 	Height    int64                  `json:"height"`
+	Data      []byte                 `json:"data"`
 }
 
 // Result of querying for a tx

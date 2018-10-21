@@ -162,10 +162,10 @@ We refer to certain globally available objects:
 `prevBlock` is the `block` at the previous height,
 and `state` keeps track of the validator set, the consensus parameters
 and other results from the application. At the point when `block` is the block under consideration,
-the current version of the `state` corresponds to the state 
-after executing transactions from the `prevBlock`. 
+the current version of the `state` corresponds to the state
+after executing transactions from the `prevBlock`.
 Elements of an object are accessed as expected,
-ie. `block.Header`. 
+ie. `block.Header`.
 See [here](https://github.com/tendermint/tendermint/blob/master/docs/spec/blockchain/state.md) for the definition of `state`.
 
 ### Header
@@ -366,7 +366,7 @@ must be greater than 2/3 of the total voting power of the complete validator set
 ### Vote
 
 A vote is a signed message broadcast in the consensus for a particular block at a particular height and round.
-When stored in the blockchain or propagated over the network, votes are encoded in TMBIN.
+When stored in the blockchain or propagated over the network, votes are encoded in Amino.
 For signing, votes are encoded in JSON, and the ChainID is included, in the form of the `CanonicalSignBytes`.
 
 We define a method `Verify` that returns `true` if the signature verifies against the pubkey for the CanonicalSignBytes
@@ -427,7 +427,7 @@ Execute(s State, app ABCIApp, block Block) State {
         AppHash: AppHash,
         LastValidators: state.Validators,
         Validators: state.NextValidators,
-        NextValidators: UpdateValidators(state.NextValidators, ValidatorChanges), 
+        NextValidators: UpdateValidators(state.NextValidators, ValidatorChanges),
         ConsensusParams: UpdateConsensusParams(state.ConsensusParams, ConsensusParamChanges),
     }
 }
