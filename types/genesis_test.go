@@ -14,8 +14,8 @@ import (
 func TestGenesisBad(t *testing.T) {
 	// test some bad ones from raw json
 	testCases := [][]byte{
-		[]byte{},                                           // empty
-		[]byte{1, 1, 1, 1, 1},                              // junk
+		{},                                                 // empty
+		{1, 1, 1, 1, 1},                                    // junk
 		[]byte(`{}`),                                       // empty
 		[]byte(`{"chain_id":"mychain"}`),                   // missing validators
 		[]byte(`{"chain_id":"mychain","validators":[]}`),   // missing validators

@@ -7,9 +7,9 @@ import (
 	"fmt"
 	"io"
 
+	ethCrypto "github.com/ethereum/go-ethereum/crypto"
 	"github.com/tendermint/go-amino"
 	"github.com/tendermint/tendermint/crypto"
-	ethCrypto "github.com/ethereum/go-ethereum/crypto"
 )
 
 //-------------------------------------

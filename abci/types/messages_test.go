@@ -83,7 +83,7 @@ func TestWriteReadMessage2(t *testing.T) {
 			Log:       phrase,
 			GasWanted: 10,
 			Tags: []cmn.KVPair{
-				cmn.KVPair{[]byte("abc"), []byte("def")},
+				{[]byte("abc"), []byte("def")},
 			},
 		},
 		// TODO: add the rest
