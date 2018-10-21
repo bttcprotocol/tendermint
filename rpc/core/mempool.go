@@ -8,10 +8,9 @@ import (
 	"github.com/pkg/errors"
 
 	abci "github.com/tendermint/tendermint/abci/types"
+	cmn "github.com/tendermint/tendermint/libs/common"
 	ctypes "github.com/tendermint/tendermint/rpc/core/types"
 	"github.com/tendermint/tendermint/types"
-	cmn "github.com/tendermint/tendermint/libs/common"
-	"encoding/hex"
 )
 
 //-----------------------------------------------------------------------------
@@ -152,7 +151,6 @@ func BroadcastTxSync(tx types.Tx) (*ctypes.ResultBroadcastTx, error) {
 // | tx        | Tx   | nil     | true     | The transaction |
 func BroadcastTxCommit(tx types.Tx) (*ctypes.ResultBroadcastTxCommit, error) {
 	// subscribe to tx being committed in block
-	logger.Info("The transaction recieved is ",hex.EncodeToString(tx),"transaction")
 	ctx, cancel := context.WithTimeout(context.Background(), subscribeTimeout)
 	defer cancel()
 	deliverTxResCh := make(chan interface{})
@@ -200,7 +198,7 @@ func BroadcastTxCommit(tx types.Tx) (*ctypes.ResultBroadcastTxCommit, error) {
 			DeliverTx: deliverTxR,
 			Hash:      tx.Hash(),
 			Height:    deliverTxRes.Height,
-			Data:	[]byte(tx) ,
+			Data:      []byte(tx),
 		}, nil
 	case <-timer.C:
 		logger.Error("failed to include tx")

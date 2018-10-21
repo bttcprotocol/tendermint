@@ -86,7 +86,6 @@ func (blockExec *BlockExecutor) ApplyBlock(state State, blockID types.BlockID, b
 	fail.Fail() // XXX
 
 	// update the state with the block and responses
-	fmt.Errorf("abci resposnse %v",abciResponses)
 	state, err = updateState(state, blockID, &block.Header, abciResponses)
 	if err != nil {
 		return state, fmt.Errorf("Commit failed for application: %v", err)
@@ -280,7 +279,6 @@ func updateValidators(currentSet *types.ValidatorSet, abciUpdates []abci.Validat
 		fmt.Errorf("error in update validators ")
 		return err
 	}
-	fmt.Println("No error in getting validator updates , updates := %v",updates)
 	// these are tendermint types now
 	for _, valUpdate := range updates {
 		if valUpdate.VotingPower < 0 {

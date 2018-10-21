@@ -776,7 +776,6 @@ func (cs *ConsensusState) needProofBlock(height int64) bool {
 	}
 
 	lastBlockMeta := cs.blockStore.LoadBlockMeta(height - 1)
-	cs.Logger.Info("[STATE] app hash", "apphash", hex.EncodeToString(cs.state.AppHash), "lastBlockMeta", hex.EncodeToString(lastBlockMeta.Header.AppHash))
 	return !bytes.Equal(cs.state.AppHash, lastBlockMeta.Header.AppHash)
 }
 
@@ -1291,7 +1290,6 @@ func (cs *ConsensusState) finalizeCommit(height int64) {
 		cs.Logger.Info("Calling finalizeCommit on already stored block", "height", block.Height)
 	}
 
-	cs.Logger.Info(fmt.Sprintf("%v", block))
 	cs.Logger.Info(fmt.Sprintf("[peppermint] precommits round %v %v", cs.Round, cs.Votes.Precommits(cs.Round)))
 
 	fail.Fail() // XXX
@@ -1666,12 +1664,11 @@ func (cs *ConsensusState) signVote(type_ byte, hash []byte, header types.PartSet
 	}
 
 	if cs.LockedBlock != nil {
-		cs.Logger.Info("[peppermint] sign add vote", "lockedHeaderHash", hex.EncodeToString(header.Hash), "lockedBlockDataHash", hex.EncodeToString(cs.LockedBlock.DataHash))
 		vote.Data = cs.LockedBlock.DataHash
 	}
 
 	err := cs.privValidator.SignVote(cs.state.ChainID, vote)
-	cs.Logger.Info("[peppermint] vote sign with data", "signBytes", vote.SignBytes(cs.state.ChainID))
+	cs.Logger.Debug("[peppermint] vote sign with data", "signBytes", vote.SignBytes(cs.state.ChainID))
 	return vote, err
 }
 

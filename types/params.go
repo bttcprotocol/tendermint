@@ -1,10 +1,10 @@
 package types
 
 import (
+	"fmt"
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/crypto/merkle"
 	cmn "github.com/tendermint/tendermint/libs/common"
-	"fmt"
 )
 
 const (
@@ -90,7 +90,6 @@ func DefaultEvidenceParams() EvidenceParams {
 func (params *ConsensusParams) Validate() error {
 	// ensure some values are greater than 0
 	if params.BlockSize.MaxBytes <= 0 {
-		fmt.Println(params.BlockSize)
 		return cmn.NewError("BlockSize.MaxBytes must be greater than 0. Got %d", params.BlockSize.MaxBytes)
 	}
 	if params.BlockGossip.BlockPartSizeBytes <= 0 {

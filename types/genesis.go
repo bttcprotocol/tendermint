@@ -7,7 +7,6 @@ import (
 
 	"github.com/tendermint/tendermint/crypto"
 	cmn "github.com/tendermint/tendermint/libs/common"
-	"fmt"
 )
 
 //------------------------------------------------------------
@@ -52,7 +51,6 @@ func (genDoc *GenesisDoc) ValidatorHash() []byte {
 // ValidateAndComplete checks that all necessary fields are present
 // and fills in defaults for optional fields left empty
 func (genDoc *GenesisDoc) ValidateAndComplete() error {
-	fmt.Printf("here in validate and complete with gen doc as %v",genDoc.ConsensusParams)
 	if genDoc.ChainID == "" {
 		return cmn.NewError("Genesis doc must include non-empty chain_id")
 	}
@@ -93,8 +91,6 @@ func GenesisDocFromJSON(jsonBlob []byte) (*GenesisDoc, error) {
 		return nil, err
 	}
 	if err := genDoc.ValidateAndComplete(); err != nil {
-		fmt.Println("___> here")
-
 		return nil, err
 	}
 

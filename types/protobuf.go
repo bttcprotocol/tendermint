@@ -50,8 +50,6 @@ func (tm2pb) Header(header *Header) abci.Header {
 		LastBlockHash:  header.LastBlockID.Hash,
 		ValidatorsHash: header.ValidatorsHash,
 		AppHash:        header.AppHash,
-
-		// Proposer: TODO
 	}
 }
 
@@ -170,8 +168,8 @@ func (pb2tm) PubKey(pubKey abci.PubKey) (crypto.PubKey, error) {
 	// TODO: define these in crypto and use them
 	sizeEd := 32
 	//sizeSecp := 33
+	// [ peppermint ]
 	sizeSecp := 65
-	fmt.Errorf("****** the type observed is*********")
 	switch pubKey.Type {
 	case ABCIPubKeyTypeEd25519:
 		if len(pubKey.Data) != sizeEd {
