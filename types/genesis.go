@@ -54,14 +54,13 @@ func (genDoc *GenesisDoc) ValidateAndComplete() error {
 	if genDoc.ChainID == "" {
 		return cmn.NewError("Genesis doc must include non-empty chain_id")
 	}
-	genDoc.ConsensusParams = DefaultConsensusParams()
-	//if genDoc.ConsensusParams == nil {
-	//	genDoc.ConsensusParams = DefaultConsensusParams()
-	//} else {
-	//	if err := genDoc.ConsensusParams.Validate(); err != nil {
-	//		return err
-	//	}
-	//}
+	if genDoc.ConsensusParams == nil {
+		genDoc.ConsensusParams = DefaultConsensusParams()
+	} else {
+		if err := genDoc.ConsensusParams.Validate(); err != nil {
+			return err
+		}
+	}
 
 	if len(genDoc.Validators) == 0 {
 		return cmn.NewError("The genesis file must have at least one validator")

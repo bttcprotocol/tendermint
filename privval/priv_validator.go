@@ -298,16 +298,6 @@ func (pv *FilePV) SignHeartbeat(chainID string, heartbeat *types.Heartbeat) erro
 	return nil
 }
 
-func (pv *FilePV) SignHello(chainID string, data string) ([]byte, error) {
-	pv.mtx.Lock()
-	defer pv.mtx.Unlock()
-	sig, err := pv.PrivKey.Sign([]byte(data))
-	if err != nil {
-		return nil, err
-	}
-	return sig, nil
-}
-
 // String returns a string representation of the FilePV.
 func (pv *FilePV) String() string {
 	return fmt.Sprintf("PrivValidator{%v LH:%v, LR:%v, LS:%v}", pv.GetAddress(), pv.LastHeight, pv.LastRound, pv.LastStep)
