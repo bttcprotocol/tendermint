@@ -156,8 +156,9 @@ func TestIndexAllTags(t *testing.T) {
 	indexer := NewTxIndex(db.NewMemDB(), IndexAllTags())
 
 	txResult := txResultWithTags([]cmn.KVPair{
-		{[]byte("account.owner"), []byte("Ivan")},
-		{[]byte("account.number"), []byte("1")},
+
+		cmn.KVPair{Key: []byte("account.owner"), Value: []byte("Ivan")},
+		cmn.KVPair{Key: []byte("account.number"), Value: []byte("1")},
 	})
 
 	err := indexer.Index(txResult)
@@ -190,19 +191,6 @@ func txResultWithTags(tags []cmn.KVPair) *types.TxResult {
 }
 
 func benchmarkTxIndex(txsCount int64, b *testing.B) {
-	tx := types.Tx("HELLO WORLD")
-	txResult := &types.TxResult{
-		Height: 1,
-		Index:  0,
-		Tx:     tx,
-		Result: abci.ResponseDeliverTx{
-			Data: []byte{0},
-			Code: abci.CodeTypeOK,
-			Log:  "",
-			Tags: []cmn.KVPair{},
-		},
-	}
-
 	dir, err := ioutil.TempDir("", "tx_index_db")
 	if err != nil {
 		b.Fatal(err)
@@ -213,11 +201,24 @@ func benchmarkTxIndex(txsCount int64, b *testing.B) {
 	indexer := NewTxIndex(store)
 
 	batch := txindex.NewBatch(txsCount)
+	txIndex := uint32(0)
 	for i := int64(0); i < txsCount; i++ {
+		tx := cmn.RandBytes(250)
+		txResult := &types.TxResult{
+			Height: 1,
+			Index:  txIndex,
+			Tx:     tx,
+			Result: abci.ResponseDeliverTx{
+				Data: []byte{0},
+				Code: abci.CodeTypeOK,
+				Log:  "",
+				Tags: []cmn.KVPair{},
+			},
+		}
 		if err := batch.Add(txResult); err != nil {
 			b.Fatal(err)
 		}
-		txResult.Index++
+		txIndex++
 	}
 
 	b.ResetTimer()

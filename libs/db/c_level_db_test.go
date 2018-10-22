@@ -5,9 +5,11 @@ package db
 import (
 	"bytes"
 	"fmt"
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
 	cmn "github.com/tendermint/tendermint/libs/common"
 )
 
@@ -19,7 +21,7 @@ func BenchmarkRandomReadsWrites2(b *testing.B) {
 	for i := 0; i < int(numItems); i++ {
 		internal[int64(i)] = int64(0)
 	}
-	db, err := NewCLevelDB(cmn.Fmt("test_%x", cmn.RandStr(12)), "")
+	db, err := NewCLevelDB(fmt.Sprintf("test_%x", cmn.RandStr(12)), "")
 	if err != nil {
 		b.Fatal(err.Error())
 		return
@@ -32,7 +34,7 @@ func BenchmarkRandomReadsWrites2(b *testing.B) {
 		// Write something
 		{
 			idx := (int64(cmn.RandInt()) % numItems)
-			internal[idx] += 1
+			internal[idx]++
 			val := internal[idx]
 			idxBytes := int642Bytes(int64(idx))
 			valBytes := int642Bytes(int64(val))
@@ -87,9 +89,12 @@ func bytes2Int64(buf []byte) int64 {
 */
 
 func TestCLevelDBBackend(t *testing.T) {
-	name := cmn.Fmt("test_%x", cmn.RandStr(12))
-	db := NewDB(name, LevelDBBackend, "")
-	defer cleanupDBDir("", name)
+	name := fmt.Sprintf("test_%x", cmn.RandStr(12))
+	// Can't use "" (current directory) or "./" here because levigo.Open returns:
+	// "Error initializing DB: IO error: test_XXX.db: Invalid argument"
+	dir := os.TempDir()
+	db := NewDB(name, LevelDBBackend, dir)
+	defer cleanupDBDir(dir, name)
 
 	_, ok := db.(*CLevelDB)
 	assert.True(t, ok)

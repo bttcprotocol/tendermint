@@ -14,6 +14,7 @@ test/p2p/data/
 test/logs
 coverage.txt
 docs/_build
+docs/dist
 *.log
 abci-cli
 docs/node_modules/
@@ -25,8 +26,13 @@ scripts/cutWALUntil/cutWALUntil
 .idea/
 *.iml
 
+.vscode/
+
 libs/pubsub/query/fuzz_test/output
 shunit2
+
+.tendermint-lite
+addrbook.json
 
 */vendor
 */.glide
@@ -34,3 +40,5 @@ shunit2
 terraform.tfstate
 terraform.tfstate.backup
 terraform.tfstate.d
+
+.vscode

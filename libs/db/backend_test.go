@@ -13,7 +13,10 @@ import (
 )
 
 func cleanupDBDir(dir, name string) {
-	os.RemoveAll(filepath.Join(dir, name) + ".db")
+	err := os.RemoveAll(filepath.Join(dir, name) + ".db")
+	if err != nil {
+		panic(err)
+	}
 }
 
 func testBackendGetSetDelete(t *testing.T, backend DBBackendType) {
@@ -21,6 +24,7 @@ func testBackendGetSetDelete(t *testing.T, backend DBBackendType) {
 	dirname, err := ioutil.TempDir("", fmt.Sprintf("test_backend_%s_", backend))
 	require.Nil(t, err)
 	db := NewDB("testdb", backend, dirname)
+	defer cleanupDBDir(dirname, "testdb")
 
 	// A nonexistent key should return nil, even if the key is empty
 	require.Nil(t, db.Get([]byte("")))
@@ -54,10 +58,11 @@ func TestBackendsGetSetDelete(t *testing.T) {
 }
 
 func withDB(t *testing.T, creator dbCreator, fn func(DB)) {
-	name := cmn.Fmt("test_%x", cmn.RandStr(12))
-	db, err := creator(name, "")
-	defer cleanupDBDir("", name)
-	assert.Nil(t, err)
+	name := fmt.Sprintf("test_%x", cmn.RandStr(12))
+	dir := os.TempDir()
+	db, err := creator(name, dir)
+	require.Nil(t, err)
+	defer cleanupDBDir(dir, name)
 	fn(db)
 	db.Close()
 }
@@ -143,7 +148,7 @@ func TestBackendsNilKeys(t *testing.T) {
 }
 
 func TestGoLevelDBBackend(t *testing.T) {
-	name := cmn.Fmt("test_%x", cmn.RandStr(12))
+	name := fmt.Sprintf("test_%x", cmn.RandStr(12))
 	db := NewDB(name, GoLevelDBBackend, "")
 	defer cleanupDBDir("", name)
 
@@ -160,9 +165,10 @@ func TestDBIterator(t *testing.T) {
 }
 
 func testDBIterator(t *testing.T, backend DBBackendType) {
-	name := cmn.Fmt("test_%x", cmn.RandStr(12))
-	db := NewDB(name, backend, "")
-	defer cleanupDBDir("", name)
+	name := fmt.Sprintf("test_%x", cmn.RandStr(12))
+	dir := os.TempDir()
+	db := NewDB(name, backend, dir)
+	defer cleanupDBDir(dir, name)
 
 	for i := 0; i < 10; i++ {
 		if i != 6 { // but skip 6.

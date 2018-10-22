@@ -4,25 +4,30 @@ import (
 	"io/ioutil"
 	"os"
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
 	"github.com/tendermint/tendermint/crypto/ed25519"
+	tmtime "github.com/tendermint/tendermint/types/time"
 )
 
 func TestGenesisBad(t *testing.T) {
 	// test some bad ones from raw json
 	testCases := [][]byte{
-		{},                                                 // empty
-		{1, 1, 1, 1, 1},                                    // junk
-		[]byte(`{}`),                                       // empty
-		[]byte(`{"chain_id":"mychain"}`),                   // missing validators
-		[]byte(`{"chain_id":"mychain","validators":[]}`),   // missing validators
-		[]byte(`{"chain_id":"mychain","validators":[{}]}`), // missing validators
-		[]byte(`{"chain_id":"mychain","validators":null}`), // missing validators
-		[]byte(`{"chain_id":"mychain"}`),                   // missing validators
-		[]byte(`{"validators":[{"pub_key":{"type":"tendermint/PubKeyEd25519","value":"AT/+aaL1eB0477Mud9JMm8Sh8BIvOYlPGC9KkIUmFaE="},"power":"10","name":""}]}`), // missing chain_id
+
+		[]byte{},              // empty
+		[]byte{1, 1, 1, 1, 1}, // junk
+		[]byte(`{}`),          // empty
+		[]byte(`{"chain_id":"mychain","validators":[{}]}`), // invalid validator
+		// missing pub_key type
+		[]byte(`{"validators":[{"pub_key":{"value":"AT/+aaL1eB0477Mud9JMm8Sh8BIvOYlPGC9KkIUmFaE="},"power":"10","name":""}]}`),
+		// missing chain_id
+		[]byte(`{"validators":[{"pub_key":{"type":"tendermint/PubKeyEd25519","value":"AT/+aaL1eB0477Mud9JMm8Sh8BIvOYlPGC9KkIUmFaE="},"power":"10","name":""}]}`),
+		// too big chain_id
+		[]byte(`{"chain_id": "Lorem ipsum dolor sit amet, consectetuer adipiscing", "validators": [{"pub_key":{"type":"tendermint/PubKeyEd25519","value":"AT/+aaL1eB0477Mud9JMm8Sh8BIvOYlPGC9KkIUmFaE="},"power":"10","name":""}]}`),
+		// wrong address
+		[]byte(`{"chain_id":"mychain", "validators":[{"address": "A", "pub_key":{"type":"tendermint/PubKeyEd25519","value":"AT/+aaL1eB0477Mud9JMm8Sh8BIvOYlPGC9KkIUmFaE="},"power":"10","name":""}]}`),
 	}
 
 	for _, testCase := range testCases {
@@ -37,10 +42,11 @@ func TestGenesisGood(t *testing.T) {
 	_, err := GenesisDocFromJSON(genDocBytes)
 	assert.NoError(t, err, "expected no error for good genDoc json")
 
+	pubkey := ed25519.GenPrivKey().PubKey()
 	// create a base gendoc from struct
 	baseGenDoc := &GenesisDoc{
 		ChainID:    "abc",
-		Validators: []GenesisValidator{{ed25519.GenPrivKey().PubKey(), 10, "myval"}},
+		Validators: []GenesisValidator{{pubkey.Address(), pubkey, 10, "myval"}},
 	}
 	genDocBytes, err = cdc.MarshalJSON(baseGenDoc)
 	assert.NoError(t, err, "error marshalling genDoc")
@@ -49,6 +55,9 @@ func TestGenesisGood(t *testing.T) {
 	genDoc, err := GenesisDocFromJSON(genDocBytes)
 	assert.NoError(t, err, "expected no error for valid genDoc json")
 	assert.NotNil(t, genDoc.ConsensusParams, "expected consensus params to be filled in")
+
+	// check validator's address is filled
+	assert.NotNil(t, genDoc.Validators[0].Address, "expected validator's address to be filled in")
 
 	// create json with consensus params filled
 	genDocBytes, err = cdc.MarshalJSON(genDoc)
@@ -62,6 +71,19 @@ func TestGenesisGood(t *testing.T) {
 	assert.NoError(t, err, "error marshalling genDoc")
 	genDoc, err = GenesisDocFromJSON(genDocBytes)
 	assert.Error(t, err, "expected error for genDoc json with block size of 0")
+
+	// Genesis doc from raw json
+	missingValidatorsTestCases := [][]byte{
+		[]byte(`{"chain_id":"mychain"}`),                   // missing validators
+		[]byte(`{"chain_id":"mychain","validators":[]}`),   // missing validators
+		[]byte(`{"chain_id":"mychain","validators":null}`), // nil validator
+		[]byte(`{"chain_id":"mychain"}`),                   // missing validators
+	}
+
+	for _, tc := range missingValidatorsTestCases {
+		_, err := GenesisDocFromJSON(tc)
+		assert.NoError(t, err)
+	}
 }
 
 func TestGenesisSaveAs(t *testing.T) {
@@ -97,10 +119,11 @@ func TestGenesisValidatorHash(t *testing.T) {
 }
 
 func randomGenesisDoc() *GenesisDoc {
+	pubkey := ed25519.GenPrivKey().PubKey()
 	return &GenesisDoc{
-		GenesisTime:     time.Now().UTC(),
+		GenesisTime:     tmtime.Now(),
 		ChainID:         "abc",
-		Validators:      []GenesisValidator{{ed25519.GenPrivKey().PubKey(), 10, "myval"}},
+		Validators:      []GenesisValidator{{pubkey.Address(), pubkey, 10, "myval"}},
 		ConsensusParams: DefaultConsensusParams(),
 	}
 }
