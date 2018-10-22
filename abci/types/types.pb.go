@@ -2525,7 +2525,6 @@ func (m *LastCommitInfo) GetVotes() []VoteInfo {
 	return nil
 }
 
-<<<<<<< HEAD
 type Address = common.HexBytes
 
 // just the minimum the app might need
@@ -2548,9 +2547,9 @@ type Header struct {
 	AppHash            []byte `protobuf:"bytes,12,opt,name=app_hash,json=appHash,proto3" json:"app_hash,omitempty"`
 	LastResultsHash    []byte `protobuf:"bytes,13,opt,name=last_results_hash,json=lastResultsHash,proto3" json:"last_results_hash,omitempty"`
 	// consensus info
-	EvidenceHash         []byte   `protobuf:"bytes,14,opt,name=evidence_hash,json=evidenceHash,proto3" json:"evidence_hash,omitempty"`
-	ProposerAddress      []byte   `protobuf:"bytes,15,opt,name=proposer_address,json=proposerAddress,proto3" json:"proposer_address,omitempty"`
-	Votes   []byte    `protobuf:"bytes,16,opt,name=votes,json=votes,proto3" json:"votes,omitempty"`
+	EvidenceHash    []byte `protobuf:"bytes,14,opt,name=evidence_hash,json=evidenceHash,proto3" json:"evidence_hash,omitempty"`
+	ProposerAddress []byte `protobuf:"bytes,15,opt,name=proposer_address,json=proposerAddress,proto3" json:"proposer_address,omitempty"`
+	Votes           []byte `protobuf:"bytes,16,opt,name=votes,json=votes,proto3" json:"votes,omitempty"`
 
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`

@@ -47,8 +47,8 @@ func (tm2pb) Header(header *Header) abci.Header {
 		NumTxs:   header.NumTxs,
 		TotalTxs: header.TotalTxs,
 
-		LastBlockId:   TM2PB.BlockID(header.LastBlockID),
-		LastBlockHash: header.LastBlockID.Hash,
+		LastBlockId: TM2PB.BlockID(header.LastBlockID),
+		//LastBlockHash: header.LastBlockID.Hash,
 
 		LastCommitHash: header.LastCommitHash,
 		DataHash:       header.DataHash,

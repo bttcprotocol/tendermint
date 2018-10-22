@@ -1299,7 +1299,7 @@ func (cs *ConsensusState) finalizeCommit(height int64) {
 	cs.Logger.Info(fmt.Sprintf("%v", block))
 	cs.Logger.Info(fmt.Sprintf("[peppermint] precommits round %v %v", cs.Round, cs.Votes.Precommits(cs.Round)))
 
-	cs.Logger.Info(cmn.Fmt("%v", block))
+	cs.Logger.Info(fmt.Sprintf("The block %v", block))
 
 	fail.Fail() // XXX
 
