@@ -51,7 +51,6 @@ type CanonicalRLPVote struct {
 	Height   uint
 	Round    uint
 	VoteType []byte
-	Proposer []byte
 	Data     []byte
 }
 
