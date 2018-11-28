@@ -114,8 +114,7 @@ func CanonicalVote(chainID string, vote *Vote) CanonicalRLPVote {
 		Height:   uint(vote.Height),
 		Round:    uint(vote.Round),
 		VoteType: []byte{vote.Type},
-		Proposer: vote.Proposer, // [peppermint] current proposer
-		Data:     vote.Data,     // [peppermint] tx data hash
+		Data:     vote.Data, // [peppermint] tx data hash
 	}
 }
 
