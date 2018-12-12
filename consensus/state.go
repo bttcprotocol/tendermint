@@ -1310,9 +1310,8 @@ func (cs *ConsensusState) finalizeCommit(height int64) {
 		precommits := cs.Votes.Precommits(cs.CommitRound)
 		seenCommit := precommits.MakeCommit()
 		for _, precommit := range seenCommit.Precommits {
-			block.Header.Votes = append(block.Header.Votes, precommit)
-
 			if precommit != nil {
+				block.Header.Votes = append(block.Header.Votes, precommit)
 				cs.Logger.Info(fmt.Sprintf("[peppermint] Committed vote:: Height: %v, Round: %v, VoteData %v, Sig %v", precommit.Height, precommit.Round, hex.EncodeToString(precommit.SignBytes(cs.state.ChainID)), hex.EncodeToString(precommit.Signature)))
 			}
 		}
