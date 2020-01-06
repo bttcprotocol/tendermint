@@ -371,7 +371,7 @@ func (h *Header) Populate(
 	version version.Consensus, chainID string,
 	timestamp time.Time, lastBlockID BlockID, totalTxs int64,
 	valHash, nextValHash []byte,
-	consensusHash, appHash, lastResultsHash []byte,
+	consensusHash, appHash, lastResultsHash []byte, lastResultsBitArray []byte,
 	proposerAddress Address,
 ) {
 	h.Version = version
@@ -384,6 +384,7 @@ func (h *Header) Populate(
 	h.ConsensusHash = consensusHash
 	h.AppHash = appHash
 	h.LastResultsHash = lastResultsHash
+	h.LastResultsBitArray = lastResultsBitArray
 	h.ProposerAddress = proposerAddress
 }
 

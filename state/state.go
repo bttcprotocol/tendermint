@@ -160,7 +160,7 @@ func (state State) MakeBlock(
 		state.Version.Consensus, state.ChainID,
 		timestamp, state.LastBlockID, state.LastBlockTotalTx+block.NumTxs,
 		state.Validators.Hash(), state.NextValidators.Hash(),
-		state.ConsensusParams.Hash(), state.AppHash, state.LastResultsHash,
+		state.ConsensusParams.Hash(), state.AppHash, state.LastResultsHash, state.LastResultsBitArray,
 		proposerAddress,
 	)
 

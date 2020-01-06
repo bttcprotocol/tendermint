@@ -104,7 +104,7 @@ func TestABCIHeader(t *testing.T) {
 		protocolVersion, "chainID",
 		timestamp, lastBlockID, totalTxs,
 		[]byte("valHash"), []byte("nextValHash"),
-		[]byte("consHash"), []byte("appHash"), []byte("lastResultsHash"),
+		[]byte("consHash"), []byte("appHash"), []byte("lastResultsHash"), []byte("lastResultsBitArray"),
 		[]byte("proposerAddress"),
 	)
 
