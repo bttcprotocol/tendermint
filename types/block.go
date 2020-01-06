@@ -357,6 +357,9 @@ type Header struct {
 	AppHash            cmn.HexBytes `json:"app_hash"`             // state after txs from the previous block
 	LastResultsHash    cmn.HexBytes `json:"last_results_hash"`    // root hash of all results from the txs from the previous block
 
+	// [peppermint] add result's bit array
+	LastResultsBitArray cmn.HexBytes `json:"last_results_bit_array"` // bit map of all results from the txs from previous block
+
 	// consensus info
 	EvidenceHash    cmn.HexBytes `json:"evidence_hash"`    // evidence included in the block
 	ProposerAddress Address      `json:"proposer_address"` // original proposer of the block

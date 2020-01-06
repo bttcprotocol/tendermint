@@ -142,6 +142,18 @@ func (arz *ABCIResponses) ResultsHash() []byte {
 	return results.Hash()
 }
 
+// ResultsBitArray returns result bit array
+// [peppermint]
+func (arz *ABCIResponses) ResultsBitArray() []byte {
+	results := make([]byte, len(arz.DeliverTx))
+	for i, d := range arz.DeliverTx {
+		if d.IsOK() {
+			results[i] = 1
+		}
+	}
+	return results
+}
+
 // LoadABCIResponses loads the ABCIResponses for the given height from the database.
 // This is useful for recovering from crashes where we called app.Commit and before we called
 // s.Save(). It can also be used to produce Merkle proofs of the result of txs.

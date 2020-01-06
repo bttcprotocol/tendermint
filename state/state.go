@@ -79,6 +79,9 @@ type State struct {
 	// Merkle root of the results from executing prev block
 	LastResultsHash []byte
 
+	// [peppermint] add last result bit array
+	LastResultsBitArray []byte
+
 	// the latest AppHash we've received from calling abci.Commit()
 	AppHash []byte
 }
@@ -105,6 +108,9 @@ func (state State) Copy() State {
 		AppHash: state.AppHash,
 
 		LastResultsHash: state.LastResultsHash,
+
+		// [peppermint] copy last results bit array
+		LastResultsBitArray: state.LastResultsBitArray,
 	}
 }
 

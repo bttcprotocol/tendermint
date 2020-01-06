@@ -61,6 +61,9 @@ func (tm2pb) Header(header *Header) abci.Header {
 		AppHash:            header.AppHash,
 		LastResultsHash:    header.LastResultsHash,
 
+		// [peppermint]
+		LastResultsBitArray: header.LastResultsBitArray,
+
 		EvidenceHash:    header.EvidenceHash,
 		ProposerAddress: header.ProposerAddress,
 	}

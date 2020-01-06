@@ -439,6 +439,9 @@ func updateState(
 		LastHeightConsensusParamsChanged: lastHeightParamsChanged,
 		LastResultsHash:                  abciResponses.ResultsHash(),
 		AppHash:                          nil,
+
+		// [peppermint] added last results bit array
+		LastResultsBitArray: abciResponses.ResultsBitArray(),
 	}, nil
 }
 

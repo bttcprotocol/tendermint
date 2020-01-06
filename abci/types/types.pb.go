@@ -2253,7 +2253,7 @@ type Header struct {
 	LastCommitHash []byte `protobuf:"bytes,8,opt,name=last_commit_hash,json=lastCommitHash,proto3" json:"last_commit_hash,omitempty"`
 	DataHash       []byte `protobuf:"bytes,9,opt,name=data_hash,json=dataHash,proto3" json:"data_hash,omitempty"`
 	//[peppermint]
-	Votes          []byte `protobuf:"bytes,10,opt,name=votes,json=votes,proto3" json:"votes,omitempty"`
+	LastResultsBitArray []byte `protobuf:"bytes,10,opt,name=last_results_bit_array,json=lastResultsBitArray,proto3" json:"last_results_bit_array,omitempty"`
 	// hashes from the app output from the prev block
 	ValidatorsHash     []byte `protobuf:"bytes,11,opt,name=validators_hash,json=validatorsHash,proto3" json:"validators_hash,omitempty"`
 	NextValidatorsHash []byte `protobuf:"bytes,12,opt,name=next_validators_hash,json=nextValidatorsHash,proto3" json:"next_validators_hash,omitempty"`
