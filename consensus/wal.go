@@ -12,14 +12,19 @@ import (
 
 	amino "github.com/tendermint/go-amino"
 	auto "github.com/tendermint/tendermint/libs/autofile"
-	cmn "github.com/tendermint/tendermint/libs/common"
 	"github.com/tendermint/tendermint/libs/log"
+	tmos "github.com/tendermint/tendermint/libs/os"
+	"github.com/tendermint/tendermint/libs/service"
 	"github.com/tendermint/tendermint/types"
 	tmtime "github.com/tendermint/tendermint/types/time"
 )
 
 const (
 	// amino overhead + time.Time + max consensus msg size
+	//
+	// q: where 24 bytes are coming from?
+	// a: cdc.MustMarshalBinaryBare(empty consensus part msg) = 14 bytes. +10
+	// bytes just in case amino will require more space in the future.
 	maxMsgSizeBytes = maxMsgSize + 24
 
 	// how often the WAL should be sync'd during period sync'ing
@@ -74,7 +79,7 @@ type WAL interface {
 // so it's either reading or appending - must read to end to start appending
 // again.
 type baseWAL struct {
-	cmn.BaseService
+	service.BaseService
 
 	group *auto.Group
 
@@ -89,7 +94,7 @@ var _ WAL = &baseWAL{}
 // NewWAL returns a new write-ahead logger based on `baseWAL`, which implements
 // WAL. It's flushed and synced to disk every 2s and once when stopped.
 func NewWAL(walFile string, groupOptions ...func(*auto.Group)) (*baseWAL, error) {
-	err := cmn.EnsureDir(filepath.Dir(walFile), 0700)
+	err := tmos.EnsureDir(filepath.Dir(walFile), 0700)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to ensure WAL directory is in place")
 	}
@@ -103,7 +108,7 @@ func NewWAL(walFile string, groupOptions ...func(*auto.Group)) (*baseWAL, error)
 		enc:           NewWALEncoder(group),
 		flushInterval: walDefaultFlushInterval,
 	}
-	wal.BaseService = *cmn.NewBaseService(nil, "baseWAL", wal)
+	wal.BaseService = *service.NewBaseService(nil, "baseWAL", wal)
 	return wal, nil
 }
 
@@ -202,7 +207,8 @@ func (wal *baseWAL) WriteSync(msg WALMessage) error {
 	}
 
 	if err := wal.FlushAndSync(); err != nil {
-		wal.Logger.Error("WriteSync failed to flush consensus wal. WARNING: may result in creating alternative proposals / votes for the current height iff the node restarted",
+		wal.Logger.Error(`WriteSync failed to flush consensus wal.
+		WARNING: may result in creating alternative proposals / votes for the current height iff the node restarted`,
 			"err", err)
 		return err
 	}
@@ -221,7 +227,9 @@ type WALSearchOptions struct {
 // Group reader will be nil if found equals false.
 //
 // CONTRACT: caller must close group reader.
-func (wal *baseWAL) SearchForEndHeight(height int64, options *WALSearchOptions) (rd io.ReadCloser, found bool, err error) {
+func (wal *baseWAL) SearchForEndHeight(
+	height int64,
+	options *WALSearchOptions) (rd io.ReadCloser, found bool, err error) {
 	var (
 		msg *TimedWALMessage
 		gr  *auto.GroupReader
@@ -365,7 +373,10 @@ func (dec *WALDecoder) Decode() (*TimedWALMessage, error) {
 	length := binary.BigEndian.Uint32(b)
 
 	if length > maxMsgSizeBytes {
-		return nil, DataCorruptionError{fmt.Errorf("length %d exceeded maximum possible value of %d bytes", length, maxMsgSizeBytes)}
+		return nil, DataCorruptionError{fmt.Errorf(
+			"length %d exceeded maximum possible value of %d bytes",
+			length,
+			maxMsgSizeBytes)}
 	}
 
 	data := make([]byte, length)

@@ -8,13 +8,14 @@ import (
 	"sync"
 
 	"github.com/tendermint/tendermint/abci/types"
-	cmn "github.com/tendermint/tendermint/libs/common"
+	tmnet "github.com/tendermint/tendermint/libs/net"
+	"github.com/tendermint/tendermint/libs/service"
 )
 
 // var maxNumberConnections = 2
 
 type SocketServer struct {
-	cmn.BaseService
+	service.BaseService
 
 	proto    string
 	addr     string
@@ -28,8 +29,8 @@ type SocketServer struct {
 	app    types.Application
 }
 
-func NewSocketServer(protoAddr string, app types.Application) cmn.Service {
-	proto, addr := cmn.ProtocolAndAddress(protoAddr)
+func NewSocketServer(protoAddr string, app types.Application) service.Service {
+	proto, addr := tmnet.ProtocolAndAddress(protoAddr)
 	s := &SocketServer{
 		proto:    proto,
 		addr:     addr,
@@ -37,7 +38,7 @@ func NewSocketServer(protoAddr string, app types.Application) cmn.Service {
 		app:      app,
 		conns:    make(map[int]net.Conn),
 	}
-	s.BaseService = *cmn.NewBaseService(nil, "ABCIServer", s)
+	s.BaseService = *service.NewBaseService(nil, "ABCIServer", s)
 	return s
 }
 
@@ -88,7 +89,7 @@ func (s *SocketServer) rmConn(connID int) error {
 
 	conn, ok := s.conns[connID]
 	if !ok {
-		return fmt.Errorf("Connection %d does not exist", connID)
+		return fmt.Errorf("connection %d does not exist", connID)
 	}
 
 	delete(s.conns, connID)
@@ -144,7 +145,7 @@ func (s *SocketServer) waitForClose(closeConn chan error, connID int) {
 }
 
 // Read requests from conn and deal with them
-func (s *SocketServer) handleRequests(closeConn chan error, conn net.Conn, responses chan<- *types.Response) {
+func (s *SocketServer) handleRequests(closeConn chan error, conn io.Reader, responses chan<- *types.Response) {
 	var count int
 	var bufReader = bufio.NewReader(conn)
 
@@ -215,20 +216,20 @@ func (s *SocketServer) handleRequest(req *types.Request, responses chan<- *types
 }
 
 // Pull responses from 'responses' and write them to conn.
-func (s *SocketServer) handleResponses(closeConn chan error, conn net.Conn, responses <-chan *types.Response) {
+func (s *SocketServer) handleResponses(closeConn chan error, conn io.Writer, responses <-chan *types.Response) {
 	var count int
 	var bufWriter = bufio.NewWriter(conn)
 	for {
 		var res = <-responses
 		err := types.WriteMessage(res, bufWriter)
 		if err != nil {
-			closeConn <- fmt.Errorf("Error writing message: %v", err.Error())
+			closeConn <- fmt.Errorf("error writing message: %v", err.Error())
 			return
 		}
 		if _, ok := res.Value.(*types.Response_Flush); ok {
 			err = bufWriter.Flush()
 			if err != nil {
-				closeConn <- fmt.Errorf("Error flushing write buffer: %v", err.Error())
+				closeConn <- fmt.Errorf("error flushing write buffer: %v", err.Error())
 				return
 			}
 		}

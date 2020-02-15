@@ -3,7 +3,7 @@ package types
 import (
 	"time"
 
-	cmn "github.com/tendermint/tendermint/libs/common"
+	"github.com/tendermint/tendermint/libs/bytes"
 	tmtime "github.com/tendermint/tendermint/types/time"
 )
 
@@ -13,12 +13,12 @@ import (
 const TimeFormat = time.RFC3339Nano
 
 type CanonicalBlockID struct {
-	Hash        cmn.HexBytes
+	Hash        bytes.HexBytes
 	PartsHeader CanonicalPartSetHeader
 }
 
 type CanonicalPartSetHeader struct {
-	Hash  cmn.HexBytes
+	Hash  bytes.HexBytes
 	Total int
 }
 
@@ -30,7 +30,7 @@ type CanonicalProposal struct {
 	BlockID   CanonicalBlockID
 	Timestamp time.Time
 	ChainID   string
-	Data      cmn.HexBytes // [peppermint] add data in proposal to that signers can sign
+	Data      bytes.HexBytes // [peppermint] add data in proposal to that signers can sign
 }
 
 type CanonicalVote struct {
@@ -45,10 +45,10 @@ type CanonicalVote struct {
 // [peppermint] create RLP vote to decode in contract
 type CanonicalRLPVote struct {
 	ChainID string
-	Type   byte
-	Height uint
-	Round  uint
-	Data   []byte
+	Type    byte
+	Height  uint
+	Round   uint
+	Data    []byte
 }
 
 //-----------------------------------
