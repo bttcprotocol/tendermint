@@ -1571,9 +1571,6 @@ func (m *ProposalPOLMessage) ValidateBasic() error {
 	if m.ProposalPOL.Size() > types.MaxVotesCount {
 		return fmt.Errorf("proposalPOL bit array is too big: %d, max: %d", m.ProposalPOL.Size(), types.MaxVotesCount)
 	}
-	if m.ProposalPOL.Size() > types.MaxVotesCount {
-		return errors.Errorf("ProposalPOL bit array is too big: %d, max: %d", m.ProposalPOL.Size(), types.MaxVotesCount)
-	}
 	return nil
 }
 

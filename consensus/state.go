@@ -1143,6 +1143,7 @@ func (cs *State) createProposalBlock() (block *types.Block, blockParts *types.Pa
 		cs.Logger.Error("enterPropose: Cannot propose anything: No commit for the previous block")
 		return
 	}
+	proposerAddr := cs.privValidatorPubKey.Address()
 
 	if cs.privValidatorPubKey == nil {
 		// If this node is a validator & proposer in the current round, it will
