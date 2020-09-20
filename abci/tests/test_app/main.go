@@ -36,7 +36,7 @@ func ensureABCIIsUp(typ string, n int) error {
 	}
 
 	for i := 0; i < n; i++ {
-		cmd := exec.Command("bash", "-c", cmdString) // nolint: gas
+		cmd := exec.Command("bash", "-c", cmdString)
 		_, err = cmd.CombinedOutput()
 		if err == nil {
 			break
@@ -53,20 +53,31 @@ func testCounter() {
 	}
 
 	fmt.Printf("Running %s test with abci=%s\n", abciApp, abciType)
-	cmd := exec.Command("bash", "-c", fmt.Sprintf("abci-cli %s", abciApp)) // nolint: gas
+	subCommand := fmt.Sprintf("abci-cli %s", abciApp)
+	cmd := exec.Command("bash", "-c", subCommand)
 	cmd.Stdout = os.Stdout
 	if err := cmd.Start(); err != nil {
 		log.Fatalf("starting %q err: %v", abciApp, err)
 	}
-	defer cmd.Wait()
-	defer cmd.Process.Kill()
+	defer func() {
+		if err := cmd.Process.Kill(); err != nil {
+			log.Printf("error on process kill: %v", err)
+		}
+		if err := cmd.Wait(); err != nil {
+			log.Printf("error while waiting for cmd to exit: %v", err)
+		}
+	}()
 
 	if err := ensureABCIIsUp(abciType, maxABCIConnectTries); err != nil {
 		log.Fatalf("echo failed: %v", err)
 	}
 
 	client := startClient(abciType)
-	defer client.Stop()
+	defer func() {
+		if err := client.Stop(); err != nil {
+			log.Printf("error trying client stop: %v", err)
+		}
+	}()
 
 	setOption(client, "serial", "on")
 	commit(client, nil)
