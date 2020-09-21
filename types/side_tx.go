@@ -4,7 +4,7 @@ import (
 	"encoding/binary"
 	"fmt"
 
-	cmn "github.com/tendermint/tendermint/libs/common"
+	tmbytes "github.com/tendermint/tendermint/libs/bytes"
 )
 
 // SideTxResult side tx result for vote
@@ -20,9 +20,9 @@ func (sp *SideTxResult) String() string {
 	}
 
 	return fmt.Sprintf("SideTxResult{%X (%v) %X}",
-		cmn.Fingerprint(sp.TxHash),
+		tmbytes.Fingerprint(sp.TxHash),
 		sp.Result,
-		cmn.Fingerprint(sp.Sig),
+		tmbytes.Fingerprint(sp.Sig),
 	)
 }
 
@@ -53,6 +53,6 @@ func (sp *SideTxResultWithData) String() string {
 
 	return fmt.Sprintf("SideTxResultWithData {%s %X}",
 		sp.SideTxResult.String(),
-		cmn.Fingerprint(sp.Data),
+		tmbytes.Fingerprint(sp.Data),
 	)
 }

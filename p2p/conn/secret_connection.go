@@ -6,6 +6,8 @@ import (
 	crand "crypto/rand"
 	"crypto/sha256"
 	"encoding/binary"
+	"errors"
+	"fmt"
 	"io"
 	"math"
 	"net"
