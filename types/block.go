@@ -589,6 +589,8 @@ type CommitSig struct {
 	ValidatorAddress Address     `json:"validator_address"`
 	Timestamp        time.Time   `json:"timestamp"`
 	Signature        []byte      `json:"signature"`
+
+	SideTxResults []SideTxResult `json:"side_tx_results"` // side-tx result [peppermint]
 }
 
 // NewCommitSigForBlock returns new CommitSig with BlockIDFlagCommit.
