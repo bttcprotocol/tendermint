@@ -590,10 +590,11 @@ const (
 
 // CommitSig is a part of the Vote included in a Commit.
 type CommitSig struct {
-	BlockIDFlag      BlockIDFlag `json:"block_id_flag"`
-	ValidatorAddress Address     `json:"validator_address"`
-	Timestamp        time.Time   `json:"timestamp"`
-	Signature        []byte      `json:"signature"`
+	BlockIDFlag      BlockIDFlag    `json:"block_id_flag"`
+	ValidatorAddress Address        `json:"validator_address"`
+	Timestamp        time.Time      `json:"timestamp"`
+	Signature        []byte         `json:"signature"`
+	SideTxResults    []SideTxResult `json:"side_tx_results"` // side-tx result [peppermint]
 }
 
 // NewCommitSigForBlock returns new CommitSig with BlockIDFlagCommit.

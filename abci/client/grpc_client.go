@@ -371,6 +371,8 @@ func (cli *grpcClient) BeginSideBlockSync(params types.RequestBeginSideBlock) (*
 func (cli *grpcClient) DeliverSideTxSync(params types.RequestDeliverSideTx) (*types.ResponseDeliverSideTx, error) {
 	reqres := cli.DeliverSideTxAsync(params)
 	return reqres.Response.GetDeliverSideTx(), cli.Error()
+}
+
 func (cli *grpcClient) ListSnapshotsSync(params types.RequestListSnapshots) (*types.ResponseListSnapshots, error) {
 	reqres := cli.ListSnapshotsAsync(params)
 	return reqres.Response.GetListSnapshots(), cli.Error()

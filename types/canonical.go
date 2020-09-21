@@ -3,6 +3,7 @@ package types
 import (
 	"time"
 
+	cmn "github.com/tendermint/tendermint/libs/bytes"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	tmtime "github.com/tendermint/tendermint/types/time"
 )
@@ -23,10 +24,10 @@ type CanonicalPartSetHeader struct {
 }
 
 type CanonicalProposal struct {
-	Type      SignedMsgType // type alias for byte
-	Height    int64         `binary:"fixed64"`
-	Round     int64         `binary:"fixed64"`
-	POLRound  int64         `binary:"fixed64"`
+	Type      tmproto.SignedMsgType // type alias for byte
+	Height    int64                 `binary:"fixed64"`
+	Round     int64                 `binary:"fixed64"`
+	POLRound  int64                 `binary:"fixed64"`
 	BlockID   CanonicalBlockID
 	Timestamp time.Time
 	ChainID   string
@@ -34,9 +35,9 @@ type CanonicalProposal struct {
 }
 
 type CanonicalVote struct {
-	Type      SignedMsgType // type alias for byte
-	Height    int64         `binary:"fixed64"`
-	Round     int64         `binary:"fixed64"`
+	Type      tmproto.SignedMsgType // type alias for byte
+	Height    int64                 `binary:"fixed64"`
+	Round     int64                 `binary:"fixed64"`
 	BlockID   CanonicalBlockID
 	Timestamp time.Time
 	ChainID   string
@@ -98,13 +99,12 @@ func CanonicalizeProposal(chainID string, proposal *tmproto.Proposal) tmproto.Ca
 // not contain ValidatorIndex and ValidatorAddress fields.
 func CanonicalizeVote(chainID string, vote *tmproto.Vote) tmproto.CanonicalVote {
 	return tmproto.CanonicalVote{
-		Type:      vote.Type,
-		Height:    vote.Height,       // encoded as sfixed64
-		Round:     int64(vote.Round), // encoded as sfixed64
-		BlockID:   CanonicalizeBlockID(vote.BlockID),
-		Timestamp: vote.Timestamp,
-		ChainID:   chainID,
-
+		Type:          vote.Type,
+		Height:        vote.Height,       // encoded as sfixed64
+		Round:         int64(vote.Round), // encoded as sfixed64
+		BlockID:       CanonicalizeBlockID(vote.BlockID),
+		Timestamp:     vote.Timestamp,
+		ChainID:       chainID,
 		SideTxResults: vote.SideTxResults,
 	}
 }

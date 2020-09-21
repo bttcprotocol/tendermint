@@ -404,6 +404,8 @@ func (cli *socketClient) DeliverSideTxSync(req types.RequestDeliverSideTx) (*typ
 	reqres := cli.queueRequest(types.ToRequestDeliverSideTx(req))
 	cli.FlushSync()
 	return reqres.Response.GetDeliverSideTx(), cli.Error()
+}
+
 func (cli *socketClient) ListSnapshotsSync(req types.RequestListSnapshots) (*types.ResponseListSnapshots, error) {
 	reqres := cli.queueRequest(types.ToRequestListSnapshots(req))
 	if err := cli.FlushSync(); err != nil {

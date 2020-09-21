@@ -322,6 +322,9 @@ func (app *localClient) BeginSideBlockSync(req types.RequestBeginSideBlock) (*ty
 	defer app.mtx.Unlock()
 
 	res := app.Application.BeginSideBlock(req)
+	return &res, nil
+}
+
 func (app *localClient) ListSnapshotsSync(req types.RequestListSnapshots) (*types.ResponseListSnapshots, error) {
 	app.mtx.Lock()
 	defer app.mtx.Unlock()

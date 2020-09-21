@@ -36,6 +36,8 @@ message Request {
     RequestOfferSnapshot      offer_snapshot       = 13;
     RequestLoadSnapshotChunk  load_snapshot_chunk  = 14;
     RequestApplySnapshotChunk apply_snapshot_chunk = 15;
+    RequestBeginSideBlock begin_side_block = 21;
+    RequestDeliverSideTx deliver_side_tx = 22;
   }
 }
 
@@ -101,6 +103,21 @@ message RequestEndBlock {
 
 message RequestCommit {}
 
+
+//
+// Side channel requests
+//
+
+message RequestBeginSideBlock {
+  bytes hash = 1;
+  tendermint.types.Header header = 2 [(gogoproto.nullable)=false];
+  repeated SideTxResult side_tx_results = 3 [(gogoproto.nullable)=false];
+}
+
+message RequestDeliverSideTx {
+  bytes tx = 1;
+}
+
 // lists available snapshots
 message RequestListSnapshots {
 }
@@ -146,6 +163,8 @@ message Response {
     ResponseOfferSnapshot      offer_snapshot       = 14;
     ResponseLoadSnapshotChunk  load_snapshot_chunk  = 15;
     ResponseApplySnapshotChunk apply_snapshot_chunk = 16;
+    ResponseBeginSideBlock begin_side_block = 21;
+    ResponseDeliverSideTx deliver_side_tx = 22;
   }
 }
 
@@ -238,6 +257,21 @@ message ResponseCommit {
   // reserve 1
   bytes data          = 2;
   int64 retain_height = 3;
+}
+
+//
+// Side channel response
+//
+
+message ResponseBeginSideBlock {
+  repeated Event events = 1 [(gogoproto.nullable)=false, (gogoproto.jsontag)="events,omitempty"];
+}
+
+message ResponseDeliverSideTx {
+  uint32 code = 1;
+  string codespace = 2;
+  SideTxResultType result = 4;
+  bytes data = 3;
 }
 
 message ResponseListSnapshots {
@@ -355,7 +389,7 @@ message Evidence {
   string                    type      = 1;
   // The offending validator
   Validator                 validator = 2 [(gogoproto.nullable) = false];
-  // The height when the offense occurred 
+  // The height when the offense occurred
   int64                     height    = 3;
   // The corresponding time where the offense occurred
   google.protobuf.Timestamp time      = 4 [
@@ -366,6 +400,26 @@ message Evidence {
   // not store historical validators.
   // https://github.com/tendermint/tendermint/issues/4581
   int64 total_voting_power = 5;
+}
+
+// Side-tx result type
+enum SideTxResultType {
+  Skip = 0;
+  Yes = 1;
+  No = 2;
+}
+
+// Side-tx sig
+message SideTxSig {
+  SideTxResultType result = 1;
+  bytes sig = 2;
+  bytes address = 3;
+}
+
+// Side tx results
+message SideTxResult {
+  bytes tx_hash = 1;
+  repeated SideTxSig sigs = 2 [(gogoproto.nullable)=false];
 }
 
 //----------------------------------------
@@ -398,4 +452,6 @@ service ABCIApplication {
   rpc OfferSnapshot(RequestOfferSnapshot) returns (ResponseOfferSnapshot);
   rpc LoadSnapshotChunk(RequestLoadSnapshotChunk) returns (ResponseLoadSnapshotChunk);
   rpc ApplySnapshotChunk(RequestApplySnapshotChunk) returns (ResponseApplySnapshotChunk);
+  rpc BeginSideBlock(RequestBeginSideBlock) returns (ResponseBeginSideBlock);
+  rpc DeliverSideTx(RequestDeliverSideTx) returns (ResponseDeliverSideTx);
 }
