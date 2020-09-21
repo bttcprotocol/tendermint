@@ -3,6 +3,7 @@ package types
 import (
 	"time"
 
+	"github.com/tendermint/tendermint/libs/bytes"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	tmtime "github.com/tendermint/tendermint/types/time"
 )
@@ -13,30 +14,30 @@ import (
 const TimeFormat = time.RFC3339Nano
 
 type CanonicalBlockID struct {
-	Hash        cmn.HexBytes
+	Hash        bytes.HexBytes
 	PartsHeader CanonicalPartSetHeader
 }
 
 type CanonicalPartSetHeader struct {
-	Hash  cmn.HexBytes
+	Hash  bytes.HexBytes
 	Total int
 }
 
 type CanonicalProposal struct {
-	Type      SignedMsgType // type alias for byte
-	Height    int64         `binary:"fixed64"`
-	Round     int64         `binary:"fixed64"`
-	POLRound  int64         `binary:"fixed64"`
+	Type      tmproto.SignedMsgType // type alias for byte
+	Height    int64                 `binary:"fixed64"`
+	Round     int64                 `binary:"fixed64"`
+	POLRound  int64                 `binary:"fixed64"`
 	BlockID   CanonicalBlockID
 	Timestamp time.Time
 	ChainID   string
-	Data      cmn.HexBytes // [peppermint] add data in proposal to that signers can sign
+	Data      bytes.HexBytes // [peppermint] add data in proposal to that signers can sign
 }
 
 type CanonicalVote struct {
-	Type      SignedMsgType // type alias for byte
-	Height    int64         `binary:"fixed64"`
-	Round     int64         `binary:"fixed64"`
+	Type      tmproto.SignedMsgType // type alias for byte
+	Height    int64                 `binary:"fixed64"`
+	Round     int64                 `binary:"fixed64"`
 	BlockID   CanonicalBlockID
 	Timestamp time.Time
 	ChainID   string

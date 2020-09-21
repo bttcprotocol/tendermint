@@ -6,7 +6,6 @@ import (
 	"net"
 	"time"
 
-	"github.com/pkg/errors"
 	"golang.org/x/net/netutil"
 
 	"github.com/tendermint/tendermint/crypto"
