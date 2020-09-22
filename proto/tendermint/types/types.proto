@@ -105,6 +105,8 @@ message Vote {
   bytes validator_address = 6;
   int32 validator_index   = 7;
   bytes signature         = 8;
+
+    repeated SideTxResult     side_tx_results = 9; // [peppermint] side tx results
 }
 
 // Commit contains the evidence that a block was committed by a set of validators.
@@ -160,3 +162,35 @@ message TxProof {
   bytes                   data      = 2;
   tendermint.crypto.Proof proof     = 3;
 }
+
+// Side tx results
+message SideTxResult {
+  bytes tx_hash = 1;
+  repeated SideTxSig sigs = 2 [(gogoproto.nullable)=false];
+}
+
+
+// Side-tx sig
+message SideTxSig {
+  SideTxResultType result = 1;
+  bytes sig = 2;
+  bytes address = 3;
+}
+
+
+// Side-tx result type
+enum SideTxResultType {
+  SKIP = 0;
+  YES = 1;
+  NO = 2;
+}
+
+/* // SideTxResultWithData side tx result with data for vote
+message SideTxResultWithData {
+
+  bytes tx_hash = 1;
+  repeated SideTxSig sigs = 2 [(gogoproto.nullable)=false];
+    bytes data = 3;
+}
+
+ */

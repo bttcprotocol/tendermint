@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"time"
 
-	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/crypto"
 	tmbytes "github.com/tendermint/tendermint/libs/bytes"
 	"github.com/tendermint/tendermint/libs/protoio"
@@ -217,7 +216,7 @@ func (vote *Vote) ValidateBasic() error {
 				return fmt.Errorf("Side-tx signature is invalid. Sig length: %v", len(s.Sig))
 			}
 
-			if _, ok := abci.SideTxResultType_name[s.Result]; !ok {
+			if _, ok := tmproto.SideTxResultType_name[s.Result]; !ok {
 				return fmt.Errorf("Invalid side-tx result. Result: %v", s.Result)
 			}
 

@@ -3,7 +3,6 @@ package types
 import (
 	"time"
 
-	"github.com/tendermint/tendermint/libs/bytes"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	tmtime "github.com/tendermint/tendermint/types/time"
 )
@@ -13,6 +12,7 @@ import (
 // TimeFormat is used for generating the sigs
 const TimeFormat = time.RFC3339Nano
 
+/*
 type CanonicalBlockID struct {
 	Hash        bytes.HexBytes
 	PartsHeader CanonicalPartSetHeader
@@ -55,7 +55,7 @@ type CanonicalRLPVote struct {
 	Round   uint
 	Data    []byte
 }
-
+*/
 //-----------------------------------
 // Canonicalize the structs
 

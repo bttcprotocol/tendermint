@@ -5,7 +5,6 @@ option go_package = "github.com/tendermint/tendermint/proto/tendermint/types";
 
 import "gogoproto/gogo.proto";
 import "tendermint/types/types.proto";
-import "tendermint/abci/types.proto";
 import "google/protobuf/timestamp.proto";
 
 message CanonicalBlockID {
@@ -39,5 +38,5 @@ message CanonicalVote {
   string                    chain_id  = 6 [(gogoproto.customname) = "ChainID"];
 
   bytes                     data      = 7;  // [peppermint] tx hash
-  repeated tendermint.abci.SideTxResult     side_tx_result = 8; // [peppermint] side tx results
+  repeated SideTxResult     side_tx_results = 8; // [peppermint] side tx results
 }

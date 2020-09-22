@@ -44,7 +44,7 @@ func (txs Txs) Hash() []byte {
 		for i := 0; i < len(txs); i++ {
 			txBzs[i] = txs[i].Hash()
 		}
-		return merkle.SimpleHashFromByteSlices(txBzs)
+		return merkle.HashFromByteSlices(txBzs)
 	}
 }
 

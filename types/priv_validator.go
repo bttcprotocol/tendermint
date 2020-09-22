@@ -17,7 +17,7 @@ type PrivValidator interface {
 
 	SignVote(chainID string, vote *tmproto.Vote) error
 	SignProposal(chainID string, proposal *tmproto.Proposal) error
-	SignSideTxResult(sideTxResult *tmproto.SideTxResultWithData) error
+	SignSideTxResult(sideTxResult *SideTxResultWithData) error
 }
 
 type PrivValidatorsByAddress []PrivValidator
@@ -105,8 +105,8 @@ func (pv MockPV) SignProposal(chainID string, proposal *tmproto.Proposal) error 
 }
 
 // SignSideTxResult implements PrivValidator.
-func (pv *MockPV) SignSideTxResult(sideTxResult *SideTxResultWithData) error {
-	sig, err := pv.privKey.Sign(sideTxResult.GetBytes())
+func (pv MockPV) SignSideTxResult(sideTxResult *SideTxResultWithData) error {
+	sig, err := pv.PrivKey.Sign(sideTxResult.GetBytes())
 	if err != nil {
 		return err
 	}
@@ -152,7 +152,7 @@ func (pv *ErroringMockPV) SignProposal(chainID string, proposal *tmproto.Proposa
 }
 
 // Implements PrivValidator.
-func (pv *erroringMockPV) SignBytes(data []byte) ([]byte, error) {
+func (pv *ErroringMockPV) SignBytes(data []byte) ([]byte, error) {
 	return nil, ErroringMockPVErr
 }
 

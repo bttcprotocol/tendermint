@@ -136,7 +136,7 @@ message RequestApplySnapshotChunk {
 message RequestBeginSideBlock {
   bytes hash = 1;
   tendermint.types.Header header = 2 [(gogoproto.nullable) = false];  
-  repeated SideTxResult side_tx_results = 3 [(gogoproto.nullable)=false];
+  repeated tendermint.types.SideTxResult side_tx_results = 3 [(gogoproto.nullable)=false];
 }
 
 message RequestDeliverSideTx {
@@ -309,7 +309,7 @@ message ResponseBeginSideBlock {
 message ResponseDeliverSideTx {
   uint32 code = 1;
   string codespace = 2;
-  SideTxResultType result = 4;
+  tendermint.types.SideTxResultType result = 4;
   bytes data = 3;
 }
 
@@ -422,26 +422,6 @@ message Snapshot {
   bytes  metadata = 5;  // Arbitrary application metadata
 }
 
-
-// Side-tx result type
-enum SideTxResultType {
-  SKIP = 0;
-  YES = 1;
-  NO = 2;
-}
-
-// Side-tx sig
-message SideTxSig {
-  SideTxResultType result = 1;
-  bytes sig = 2;
-  bytes address = 3;
-}
-
-// Side tx results
-message SideTxResult {
-  bytes tx_hash = 1;
-  repeated SideTxSig sigs = 2 [(gogoproto.nullable)=false];
-}
 
 //----------------------------------------
 // Service Definition
