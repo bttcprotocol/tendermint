@@ -1085,6 +1085,7 @@ func (cs *State) defaultDecideProposal(height int64, round int32) {
 	proposal := types.NewProposal(height, round, cs.ValidRound, propBlockID)
 	proposal.Data = block.DataHash // [peppermint] add data hash to proposal
 	p := proposal.ToProto()
+	d := types.ProposalSignBytes(cs.state.ChainID, p)
 	cs.Logger.Info("[peppermint] New proposal", "signBytes", d)
 	if err := cs.privValidator.SignProposal(cs.state.ChainID, p); err == nil {
 		proposal.Signature = p.Signature
@@ -1143,8 +1144,6 @@ func (cs *State) createProposalBlock() (block *types.Block, blockParts *types.Pa
 		cs.Logger.Error("enterPropose: Cannot propose anything: No commit for the previous block")
 		return
 	}
-	proposerAddr := cs.privValidatorPubKey.Address()
-
 	if cs.privValidatorPubKey == nil {
 		// If this node is a validator & proposer in the current round, it will
 		// miss the opportunity to create a block.
@@ -2092,7 +2091,7 @@ func (cs *State) signVote(
 
 	v := vote.ToProto()
 	err := cs.privValidator.SignVote(cs.state.ChainID, v)
-	cs.Logger.Info("[peppermint] vote sign with data", "signBytes", vote.SignBytes(cs.state.ChainID))
+	cs.Logger.Info("[peppermint] vote sign with data", "signBytes", types.VoteSignBytes(cs.state.ChainID, v))
 	vote.Signature = v.Signature
 
 	return vote, err
