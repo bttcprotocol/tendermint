@@ -20,6 +20,8 @@ import (
 const (
 	PrivKeyAminoName = "tendermint/PrivKeySecp256k1"
 	PubKeyAminoName  = "tendermint/PubKeySecp256k1"
+
+	keyType = "secp256k1"
 )
 
 var cdc = amino.NewCodec()
@@ -71,6 +73,10 @@ func (privKey PrivKeySecp256k1) Equals(other crypto.PrivKey) bool {
 		return subtle.ConstantTimeCompare(privKey[:], otherSecp[:]) == 1
 	}
 	return false
+}
+
+func (privKey PrivKeySecp256k1) Type() string {
+	return keyType
 }
 
 // GenPrivKey generates a new ECDSA private key on curve secp256k1 private key.
@@ -181,6 +187,10 @@ func (pubKey PubKeySecp256k1) Bytes() []byte {
 
 func (pubKey PubKeySecp256k1) String() string {
 	return fmt.Sprintf("PubKeySecp256k1{%X}", pubKey[:])
+}
+
+func (privKey PubKeySecp256k1) Type() string {
+	return keyType
 }
 
 func (pubKey PubKeySecp256k1) Equals(other crypto.PubKey) bool {
