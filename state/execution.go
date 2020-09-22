@@ -133,7 +133,7 @@ func (blockExec *BlockExecutor) ValidateBlock(state State, block *types.Block) e
 // from outside this package to process and commit an entire block.
 // It takes a blockID to avoid recomputing the parts hash.
 func (blockExec *BlockExecutor) ApplyBlock(state State, blockID types.BlockID, block *types.Block) (State, int64, error) {
-	blockExec.logger.Debug("[Peppermint] Applying block", "height", block.Height, "numTxs", block.NumTxs)
+	blockExec.logger.Debug("[Peppermint] Applying block", "height", block.Height, "numTxs", len(block.Data.Txs))
 
 	if err := blockExec.ValidateBlock(state, block); err != nil {
 		return state, 0, ErrInvalidBlock(err)
@@ -284,6 +284,7 @@ func execBlockOnProxyApp(
 	abciResponses := new(tmstate.ABCIResponses)
 	dtxs := make([]*abci.ResponseDeliverTx, len(block.Txs))
 	abciResponses.DeliverTxs = dtxs
+	sideTxResponses := make([]*types.SideTxResultWithData, 0)
 
 	// Execute transactions and get hash.
 	proxyCb := func(req *abci.Request, res *abci.Response) {
@@ -310,7 +311,7 @@ func execBlockOnProxyApp(
 	var err error
 	pbh := block.Header.ToProto()
 	if pbh == nil {
-		return nil, errors.New("nil header")
+		return nil, nil, errors.New("nil header")
 	}
 	abciResponses.BeginBlock, err = proxyAppConn.BeginBlockSync(abci.RequestBeginBlock{
 		Hash:                block.Hash(),
@@ -328,13 +329,13 @@ func execBlockOnProxyApp(
 	//
 
 	// get side-tx results for begin side-block
-	sideTxResults := getBeginSideBlockData(block, stateDB)
+	sideTxResults := getBeginSideBlockData(block, store)
 
 	// TODO get votes from last commit
 	// Side hook for begin block
 	sideBlockResponse, err := proxyAppConn.BeginSideBlockSync(abci.RequestBeginSideBlock{
-		Hash:          hash,
-		Header:        header,
+		Hash:          block.Hash(),
+		Header:        *pbh,
 		SideTxResults: sideTxResults,
 	})
 	if err != nil {
@@ -370,7 +371,7 @@ func execBlockOnProxyApp(
 					txReq := vreq.DeliverSideTx
 					txRes := vres.DeliverSideTx
 
-					if txRes.Code == abci.CodeTypeOK && txRes.Result != abci.SideTxResultType_Skip {
+					if txRes.Code == abci.CodeTypeOK && txRes.Result != tmproto.SideTxResultType_SKIP {
 						tx := types.Tx(txReq.Tx)
 						// add into side tx responses
 						sideTxResponses = append(sideTxResponses, &types.SideTxResultWithData{
@@ -390,7 +391,7 @@ func execBlockOnProxyApp(
 
 		// Run side-txs of block.
 		for txIndex, tx := range block.Txs {
-			txRes := abciResponses.DeliverTx[txIndex]
+			txRes := abciResponses.DeliverTxs[txIndex]
 
 			// execute side-tx only if tx is valid
 			if txRes.Code == abci.CodeTypeOK {
@@ -631,7 +632,7 @@ func ExecCommitBlock(
 	initialHeight int64,
 ) ([]byte, error) {
 	logger.Info("[Peppermint] Exec commit block", "height", block.Height)
-	_, err := execBlockOnProxyApp(logger, appConnConsensus, block, store, initialHeight, false)
+	_, _, err := execBlockOnProxyApp(logger, appConnConsensus, block, store, initialHeight, false)
 	if err != nil {
 		logger.Error("Error executing block on proxy app", "height", block.Height, "err", err)
 		return nil, err
@@ -650,7 +651,7 @@ func ExecCommitBlock(
 // Side channel utils
 //
 
-func getBeginSideBlockData(block *types.Block, stateDB dbm.DB) []abci.SideTxResult {
+func getBeginSideBlockData(block *types.Block, store Store) []tmproto.SideTxResult {
 	// returns [
 	//   {
 	//     txHash: txHash,
@@ -666,51 +667,51 @@ func getBeginSideBlockData(block *types.Block, stateDB dbm.DB) []abci.SideTxResu
 	// ]
 
 	// prepare result
-	result := make([]abci.SideTxResult, 0)
+	result := make([]tmproto.SideTxResult, 0)
 
 	// return if prev block is empty result (mostly block 0)
 	if block == nil || block.Height <= 2 {
-		return make([]abci.SideTxResult, 0)
+		return make([]tmproto.SideTxResult, 0)
 	}
 
 	// iterate all votes
-	for _, vote := range block.LastCommit.Precommits {
-		if vote != nil {
-			txMapping := make(map[int]bool)
-			for _, sideTxResult := range vote.SideTxResults {
-				// find if result object is already created
-				resultIndex := -1
-				for i, rr := range result {
-					if bytes.Equal(rr.TxHash, sideTxResult.TxHash) {
-						resultIndex = i
-						break
-					}
-				}
-
-				// create tx-hash based object, if not found yet
-				if resultIndex == -1 {
-					result = append(result, abci.SideTxResult{
-						TxHash: sideTxResult.TxHash,
-						Sigs:   make([]abci.SideTxSig, 0),
-					})
-					// set new result index
-					resultIndex = len(result) - 1
-				}
-
-				// if tx is not processed for current vote, add it into sigs for particular side-tx result
-				if _, ok := txMapping[resultIndex]; !ok {
-					// get result object from result index
-					result[resultIndex].Sigs = append(result[resultIndex].Sigs, abci.SideTxSig{
-						Result:  abci.SideTxResultType(sideTxResult.Result),
-						Sig:     sideTxResult.Sig,
-						Address: vote.ValidatorAddress,
-					})
-
-					// add tx hash for the record for particular vote to avoid duplicate votes
-					txMapping[resultIndex] = true
+	for _, vote := range block.LastCommit.Signatures {
+		// if vote != nil {
+		txMapping := make(map[int]bool)
+		for _, sideTxResult := range vote.SideTxResults {
+			// find if result object is already created
+			resultIndex := -1
+			for i, rr := range result {
+				if bytes.Equal(rr.TxHash, sideTxResult.TxHash) {
+					resultIndex = i
+					break
 				}
 			}
+
+			// create tx-hash based object, if not found yet
+			if resultIndex == -1 {
+				result = append(result, tmproto.SideTxResult{
+					TxHash: sideTxResult.TxHash,
+					Sigs:   make([]tmproto.SideTxSig, 0),
+				})
+				// set new result index
+				resultIndex = len(result) - 1
+			}
+
+			// if tx is not processed for current vote, add it into sigs for particular side-tx result
+			if _, ok := txMapping[resultIndex]; !ok {
+				// get result object from result index
+				result[resultIndex].Sigs = append(result[resultIndex].Sigs, tmproto.SideTxSig{
+					Result:  tmproto.SideTxResultType(sideTxResult.Result),
+					Sig:     sideTxResult.Sig,
+					Address: vote.ValidatorAddress,
+				})
+
+				// add tx hash for the record for particular vote to avoid duplicate votes
+				txMapping[resultIndex] = true
+			}
 		}
+		// }
 	}
 
 	return result
