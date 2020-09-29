@@ -57,7 +57,7 @@ func testCounter() {
 	cmd := exec.Command("bash", "-c", subCommand)
 	cmd.Stdout = os.Stdout
 	if err := cmd.Start(); err != nil {
-		log.Fatalf("starting %q err: %v", abciApp, err)
+		log.Printf("starting %q err: %v", abciApp, err)
 	}
 	defer func() {
 		if err := cmd.Process.Kill(); err != nil {
@@ -69,7 +69,7 @@ func testCounter() {
 	}()
 
 	if err := ensureABCIIsUp(abciType, maxABCIConnectTries); err != nil {
-		log.Fatalf("echo failed: %v", err)
+		log.Printf("echo failed: %v", err)
 	}
 
 	client := startClient(abciType)

@@ -22,7 +22,7 @@ func ExampleHTTP_simple() {
 	rpcAddr := rpctest.GetConfig().RPC.ListenAddress
 	c, err := rpchttp.New(rpcAddr, "/websocket")
 	if err != nil {
-		log.Fatal(err)
+		log.Printf("error on remote endpoint: %v", err)
 	}
 
 	// Create a transaction
@@ -34,25 +34,27 @@ func ExampleHTTP_simple() {
 	// c.BroadcastTxSync though in production).
 	bres, err := c.BroadcastTxCommit(context.Background(), tx)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
+		return
 	}
 	if bres.CheckTx.IsErr() || bres.DeliverTx.IsErr() {
-		log.Fatal("BroadcastTxCommit transaction failed")
+		log.Println("BroadcastTxCommit transaction failed")
+		return
 	}
 
 	// Now try to fetch the value for the key
 	qres, err := c.ABCIQuery(context.Background(), "/key", k)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 	if qres.Response.IsErr() {
-		log.Fatal("ABCIQuery failed")
+		log.Println("ABCIQuery failed")
 	}
 	if !bytes.Equal(qres.Response.Key, k) {
-		log.Fatal("returned key does not match queried key")
+		log.Println("returned key does not match queried key")
 	}
 	if !bytes.Equal(qres.Response.Value, v) {
-		log.Fatal("returned value does not match sent value")
+		log.Println("returned value does not match sent value")
 	}
 
 	fmt.Println("Sent tx     :", string(tx))
@@ -75,7 +77,7 @@ func ExampleHTTP_batching() {
 	rpcAddr := rpctest.GetConfig().RPC.ListenAddress
 	c, err := rpchttp.New(rpcAddr, "/websocket")
 	if err != nil {
-		log.Fatal(err)
+		log.Printf("error on remote endpoint: %v", err)
 	}
 
 	// Create our two transactions
@@ -97,27 +99,29 @@ func ExampleHTTP_batching() {
 		// Broadcast the transaction and wait for it to commit (rather use
 		// c.BroadcastTxSync though in production).
 		if _, err := batch.BroadcastTxCommit(context.Background(), tx); err != nil {
-			log.Fatal(err)
+			log.Println(err)
 		}
 	}
 
 	// Send the batch of 2 transactions
 	if _, err := batch.Send(context.Background()); err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 
 	// Now let's query for the original results as a batch
 	keys := [][]byte{k1, k2}
 	for _, key := range keys {
 		if _, err := batch.ABCIQuery(context.Background(), "/key", key); err != nil {
-			log.Fatal(err)
+			log.Println(err)
+			return
 		}
 	}
 
 	// Send the 2 queries and keep the results
 	results, err := batch.Send(context.Background())
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
+		return
 	}
 
 	// Each result in the returned list is the deserialized result of each
@@ -125,7 +129,8 @@ func ExampleHTTP_batching() {
 	for _, result := range results {
 		qr, ok := result.(*ctypes.ResultABCIQuery)
 		if !ok {
-			log.Fatal("invalid result type from ABCIQuery request")
+			log.Println("invalid result type from ABCIQuery request")
+			return
 		}
 		fmt.Println(string(qr.Response.Key), "=", string(qr.Response.Value))
 	}
