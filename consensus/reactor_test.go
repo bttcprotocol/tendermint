@@ -722,7 +722,7 @@ func TestNewRoundStepMessageValidateHeight(t *testing.T) {
 		{true, -1, 11, "Normal height but LCR < 0"},
 	}
 
-	for i, tc := range testCases {
+	for _, tc := range testCases {
 		tc := tc
 		t.Run(tc.testName, func(t *testing.T) {
 			message := NewRoundStepMessage{
