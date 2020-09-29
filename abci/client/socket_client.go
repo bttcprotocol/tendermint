@@ -392,7 +392,9 @@ func (cli *socketClient) BeginSideBlockAsync(req types.RequestBeginSideBlock) *R
 
 func (cli *socketClient) BeginSideBlockSync(req types.RequestBeginSideBlock) (*types.ResponseBeginSideBlock, error) {
 	reqres := cli.queueRequest(types.ToRequestBeginSideBlock(req))
-	cli.FlushSync()
+	if err := cli.FlushSync(); err != nil {
+		return nil, err
+	}
 	return reqres.Response.GetBeginSideBlock(), cli.Error()
 }
 
@@ -402,7 +404,9 @@ func (cli *socketClient) DeliverSideTxAsync(req types.RequestDeliverSideTx) *Req
 
 func (cli *socketClient) DeliverSideTxSync(req types.RequestDeliverSideTx) (*types.ResponseDeliverSideTx, error) {
 	reqres := cli.queueRequest(types.ToRequestDeliverSideTx(req))
-	cli.FlushSync()
+	if err := cli.FlushSync(); err != nil {
+		return nil, err
+	}
 	return reqres.Response.GetDeliverSideTx(), cli.Error()
 }
 

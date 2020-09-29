@@ -65,7 +65,7 @@ func startConsensusNet(t *testing.T, css []*State, n int) (
 		require.NoError(t, err)
 		blocksSubs = append(blocksSubs, blocksSub)
 
-		if css[i].state.LastBlockHeight == 0 { //simulate handle initChain in handshake
+		if css[i].state.LastBlockHeight == 0 { // simulate handle initChain in handshake
 			if err := css[i].blockExec.Store().Save(css[i].state); err != nil {
 				t.Error(err)
 			}
@@ -722,7 +722,7 @@ func TestNewRoundStepMessageValidateHeight(t *testing.T) {
 		{true, -1, 11, "Normal height but LCR < 0"},
 	}
 
-	for i, tc := range testCases {
+	for _, tc := range testCases {
 		tc := tc
 		t.Run(tc.testName, func(t *testing.T) {
 			message := NewRoundStepMessage{

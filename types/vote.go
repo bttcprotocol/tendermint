@@ -213,16 +213,16 @@ func (vote *Vote) ValidateBasic() error {
 		for _, s := range vote.SideTxResults {
 			// side-tx response sig should be empty or valid 65 bytes
 			if len(s.Sig) != 0 && len(s.Sig) != 65 {
-				return fmt.Errorf("Side-tx signature is invalid. Sig length: %v", len(s.Sig))
+				return fmt.Errorf("side-tx signature is invalid. Sig length: %v", len(s.Sig))
 			}
 
 			if _, ok := tmproto.SideTxResultType_name[s.Result]; !ok {
-				return fmt.Errorf("Invalid side-tx result. Result: %v", s.Result)
+				return fmt.Errorf("invalid side-tx result. Result: %v", s.Result)
 			}
 
 			// tx-hash must be 32 bytes
 			if len(s.TxHash) != 32 {
-				return fmt.Errorf("Invalid side-tx tx hash. TxHash: %v", hex.EncodeToString(s.TxHash))
+				return fmt.Errorf("invalid side-tx tx hash. TxHash: %v", hex.EncodeToString(s.TxHash))
 			}
 		}
 	}
@@ -252,7 +252,7 @@ func (vote *Vote) ToProto() *tmproto.Vote {
 	}
 }
 
-//FromProto converts a proto generetad type to a handwritten type
+// FromProto converts a proto generetad type to a handwritten type
 // return type, nil if everything converts safely, otherwise nil, error
 func VoteFromProto(pv *tmproto.Vote) (*Vote, error) {
 	if pv == nil {

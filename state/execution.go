@@ -132,7 +132,8 @@ func (blockExec *BlockExecutor) ValidateBlock(state State, block *types.Block) e
 // It's the only function that needs to be called
 // from outside this package to process and commit an entire block.
 // It takes a blockID to avoid recomputing the parts hash.
-func (blockExec *BlockExecutor) ApplyBlock(state State, blockID types.BlockID, block *types.Block) (State, int64, error) {
+func (blockExec *BlockExecutor) ApplyBlock(
+	state State, blockID types.BlockID, block *types.Block) (State, int64, error) {
 	blockExec.logger.Debug("[Peppermint] Applying block", "height", block.Height, "numTxs", len(block.Data.Txs))
 
 	if err := blockExec.ValidateBlock(state, block); err != nil {
@@ -149,8 +150,9 @@ func (blockExec *BlockExecutor) ApplyBlock(state State, blockID types.BlockID, b
 	}
 
 	startTime := time.Now().UnixNano()
-	abciResponses, sideTxResponses, err := execBlockOnProxyApp(blockExec.logger, blockExec.proxyApp, block,
-		blockExec.store, state.InitialHeight,byzVals, executeSideDeliverTx)
+	abciResponses, sideTxResponses, err := execBlockOnProxyApp(
+		blockExec.logger, blockExec.proxyApp, block,
+		blockExec.store, state.InitialHeight, byzVals, executeSideDeliverTx)
 
 	endTime := time.Now().UnixNano()
 	blockExec.metrics.BlockProcessingTime.Observe(float64(endTime-startTime) / 1000000)

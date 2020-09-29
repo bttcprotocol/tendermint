@@ -65,7 +65,7 @@ func ResetConfig(name string) *cfg.Config {
 	return cfg.ResetTestRoot(name)
 }
 
-//-------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------
 // validator stub (a kvstore consensus peer we control)
 
 type validatorStub struct {
@@ -175,7 +175,7 @@ func (vss ValidatorStubsByPower) Swap(i, j int) {
 	vss[j].Index = int32(j)
 }
 
-//-------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------
 // Functions for transitioning the consensus state
 
 func startTestRound(cs *State, height int64, round int32) {
@@ -346,7 +346,7 @@ func subscribeToVoter(cs *State, addr []byte) <-chan tmpubsub.Message {
 	return ch
 }
 
-//-------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------
 // consensus states
 
 func newState(state sm.State, pv types.PrivValidator, app abci.Application) *State {
@@ -391,7 +391,7 @@ func newStateWithConfigAndBlockStore(
 	// Make State
 	stateDB := blockDB
 	stateStore := sm.NewStore(stateDB)
-	if err := stateStore.Save(state); err != nil { //for save height 1's validators info
+	if err := stateStore.Save(state); err != nil { // for save height 1's validators info
 		panic(err)
 	}
 
@@ -436,7 +436,7 @@ func randState(nValidators int) (*State, []*validatorStub) {
 	return cs, vss
 }
 
-//-------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------
 
 func ensureNoNewEvent(ch <-chan tmpubsub.Message, timeout time.Duration,
 	errorMessage string) {
@@ -656,7 +656,7 @@ func ensureNewEventOnChannel(ch <-chan tmpubsub.Message) {
 	}
 }
 
-//-------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------
 // consensus nets
 
 // consensusLogger is a TestingLogger which uses a different
@@ -749,7 +749,7 @@ func randConsensusNetWithPeers(
 			state.Version.Consensus.App = kvstore.ProtocolVersion
 		}
 		app.InitChain(abci.RequestInitChain{Validators: vals})
-		//sm.SaveState(stateDB,state)	//height 1's validatorsInfo already saved in LoadStateFromDBOrGenesisDoc above
+		// sm.SaveState(stateDB,state)	//height 1's validatorsInfo already saved in LoadStateFromDBOrGenesisDoc above
 
 		css[i] = newStateWithConfig(thisConfig, state, privVal, app)
 		css[i].SetTimeoutTicker(tickerFunc())
@@ -771,7 +771,7 @@ func getSwitchIndex(switches []*p2p.Switch, peer p2p.Peer) int {
 	panic("didnt find peer in switches")
 }
 
-//-------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------
 // genesis
 
 func randGenesisDoc(numValidators int, randPower bool, minPower int64) (*types.GenesisDoc, []types.PrivValidator) {
@@ -801,7 +801,7 @@ func randGenesisState(numValidators int, randPower bool, minPower int64) (sm.Sta
 	return s0, privValidators
 }
 
-//------------------------------------
+// ------------------------------------
 // mock ticker
 
 func newMockTickerFunc(onlyOnce bool) func() TimeoutTicker {
@@ -849,7 +849,7 @@ func (m *mockTicker) Chan() <-chan timeoutInfo {
 
 func (*mockTicker) SetLogger(log.Logger) {}
 
-//------------------------------------
+// ------------------------------------
 
 func newCounter() abci.Application {
 	return counter.NewApplication(true)

@@ -1,6 +1,6 @@
 package rpc
 
-//import (
+// import (
 //	"fmt"
 //	"os"
 //	"testing"
@@ -17,14 +17,14 @@ package rpc
 //	"github.com/tendermint/tendermint/types"
 //)
 
-//var node *nm.Node
-//var chainID = "tendermint_test" // TODO use from config.
-////nolint:unused
-//var waitForEventTimeout = 5 * time.Second
+// var node *nm.Node
+// var chainID = "tendermint_test" // TODO use from config.
+// //nolint:unused
+// var waitForEventTimeout = 5 * time.Second
 
-//// TODO fix tests!!
+// // TODO fix tests!!
 
-//func TestMain(m *testing.M) {
+// func TestMain(m *testing.M) {
 //	app := kvstore.NewKVStoreApplication()
 //	node = rpctest.StartTendermint(app)
 
@@ -34,14 +34,14 @@ package rpc
 //	os.Exit(code)
 //}
 
-//func kvstoreTx(k, v []byte) []byte {
+// func kvstoreTx(k, v []byte) []byte {
 //	return []byte(fmt.Sprintf("%s=%s", k, v))
-//}
+// }
 
-//// TODO: enable it after general proof format has been adapted
-//// in abci/examples/kvstore.go
-////nolint:unused,deadcode
-//func _TestAppProofs(t *testing.T) {
+// // TODO: enable it after general proof format has been adapted
+// // in abci/examples/kvstore.go
+// //nolint:unused,deadcode
+// func _TestAppProofs(t *testing.T) {
 //	assert, require := assert.New(t), require.New(t)
 
 //	prt := defaultProofRuntime()
@@ -121,7 +121,7 @@ package rpc
 //	assert.Error(err, "%#v", err)
 //}
 
-//func TestTxProofs(t *testing.T) {
+// func TestTxProofs(t *testing.T) {
 //	assert, require := assert.New(t), require.New(t)
 
 //	cl := client.NewLocal(node)
@@ -157,4 +157,4 @@ package rpc
 //	commit, err := GetCertifiedCommit(br.Height, cl, cert)
 //	require.Nil(err, "%#v", err)
 //	require.Equal(res.Proof.RootHash, commit.Header.DataHash)
-//}
+// }
