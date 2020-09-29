@@ -185,7 +185,7 @@ enum SideTxResultType {
   NO = 2;
 }
 
-/* // SideTxResultWithData side tx result with data for vote
+// SideTxResultWithData side tx result with data for vote
 message SideTxResultWithData {
 
   bytes tx_hash = 1;
@@ -193,4 +193,3 @@ message SideTxResultWithData {
     bytes data = 3;
 }
 
- */
