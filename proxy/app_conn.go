@@ -96,7 +96,8 @@ func (app *appConnConsensus) CommitSync() (*types.ResponseCommit, error) {
 	return app.appConn.CommitSync()
 }
 
-func (app *appConnConsensus) BeginSideBlockSync(req types.RequestBeginSideBlock) (*types.ResponseBeginSideBlock, error) {
+func (app *appConnConsensus) BeginSideBlockSync(
+	req types.RequestBeginSideBlock) (*types.ResponseBeginSideBlock, error) {
 	return app.appConn.BeginSideBlockSync(req)
 }
 

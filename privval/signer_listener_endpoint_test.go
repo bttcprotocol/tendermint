@@ -145,7 +145,7 @@ func TestRetryConnToRemoteSigner(t *testing.T) {
 	}
 }
 
-///////////////////////////////////
+// /////////////////////////////////
 
 func newSignerListenerEndpoint(logger log.Logger, addr string, timeoutReadWrite time.Duration) *SignerListenerEndpoint {
 	proto, address := tmnet.ProtocolAndAddress(addr)

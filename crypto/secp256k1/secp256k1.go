@@ -189,7 +189,7 @@ func (pubKey PubKeySecp256k1) String() string {
 	return fmt.Sprintf("PubKeySecp256k1{%X}", pubKey[:])
 }
 
-func (privKey PubKeySecp256k1) Type() string {
+func (pubKey PubKeySecp256k1) Type() string {
 	return keyType
 }
 
