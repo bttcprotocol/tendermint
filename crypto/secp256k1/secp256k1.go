@@ -48,7 +48,9 @@ func (privKey PrivKey) PubKey() crypto.PubKey {
 		panic(err)
 	}
 
-	var pubkey PubKey
+	// pubkey := ethCrypto.FromECDSAPub(&privateObject.PublicKey)
+	var pubkey PubKey = make(PubKey, PubKeySize)
+	// temp := []byte{}
 	copy(pubkey[:], ethCrypto.FromECDSAPub(&privateObject.PublicKey))
 	return pubkey
 
