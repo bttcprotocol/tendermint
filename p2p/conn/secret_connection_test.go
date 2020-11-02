@@ -380,7 +380,6 @@ func makeSecretConnPair(tb testing.TB) (fooSecConn, barSecConn *SecretConnection
 	return fooSecConn, barSecConn
 }
 
-// /////////////////////////////////////////////////////////////////////////////
 // Benchmarks
 
 func BenchmarkWriteSecretConnection(b *testing.B) {

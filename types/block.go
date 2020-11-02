@@ -24,6 +24,8 @@ import (
 
 const (
 	// MaxHeaderBytes is a maximum header size.
+	// NOTE: Because app hash can be of arbitrary size, the header is therefore not
+	// capped in size and thus this number should be seen as a soft max
 	MaxHeaderBytes int64 = 626
 
 	// MaxOverheadForBlock - maximum overhead to encode a block (up to
@@ -263,12 +265,12 @@ func BlockFromProto(bp *tmproto.Block) (*Block, error) {
 // MaxDataBytes returns the maximum size of block's data.
 //
 // XXX: Panics on negative result.
-func MaxDataBytes(maxBytes int64, valsCount, evidenceCount int) int64 {
+func MaxDataBytes(maxBytes, evidenceBytes int64, valsCount int) int64 {
 	maxDataBytes := maxBytes -
 		MaxOverheadForBlock -
 		MaxHeaderBytes -
-		int64(valsCount)*MaxVoteBytes -
-		int64(evidenceCount)*MaxEvidenceBytes
+		MaxCommitBytes(valsCount) -
+		evidenceBytes
 
 	if maxDataBytes < 0 {
 		panic(fmt.Sprintf(
@@ -279,21 +281,18 @@ func MaxDataBytes(maxBytes int64, valsCount, evidenceCount int) int64 {
 	}
 
 	return maxDataBytes
-
 }
 
-// MaxDataBytesUnknownEvidence returns the maximum size of block's data when
+// MaxDataBytesNoEvidence returns the maximum size of block's data when
 // evidence count is unknown. MaxEvidencePerBlock will be used for the size
 // of evidence.
 //
 // XXX: Panics on negative result.
-func MaxDataBytesUnknownEvidence(maxBytes int64, valsCount int, maxNumEvidence uint32) int64 {
-	maxEvidenceBytes := int64(maxNumEvidence) * MaxEvidenceBytes
+func MaxDataBytesNoEvidence(maxBytes int64, valsCount int) int64 {
 	maxDataBytes := maxBytes -
 		MaxOverheadForBlock -
 		MaxHeaderBytes -
-		int64(valsCount)*MaxVoteBytes -
-		maxEvidenceBytes
+		MaxCommitBytes(valsCount)
 
 	if maxDataBytes < 0 {
 		panic(fmt.Sprintf(
@@ -304,6 +303,25 @@ func MaxDataBytesUnknownEvidence(maxBytes int64, valsCount int, maxNumEvidence u
 	}
 
 	return maxDataBytes
+}
+
+// MakeBlock returns a new block with an empty header, except what can be
+// computed from itself.
+// It populates the same set of fields validated by ValidateBasic.
+func MakeBlock(height int64, txs []Tx, lastCommit *Commit, evidence []Evidence) *Block {
+	block := &Block{
+		Header: Header{
+			Version: tmversion.Consensus{Block: version.BlockProtocol, App: 0},
+			Height:  height,
+		},
+		Data: Data{
+			Txs: txs,
+		},
+		Evidence:   EvidenceData{Evidence: evidence},
+		LastCommit: lastCommit,
+	}
+	block.fillHeader()
+	return block
 }
 
 //-----------------------------------------------------------------------------
@@ -573,6 +591,14 @@ const (
 	BlockIDFlagNil
 )
 
+const (
+	// Max size of commit without any commitSigs -> 82 for BlockID, 8 for Height, 4 for Round.
+	MaxCommitOverheadBytes int64 = 94
+	// Commit sig size is made up of 64 bytes for the signature, 20 bytes for the address,
+	// 1 byte for the flag and 14 bytes for the timestamp
+	MaxCommitSigBytes int64 = 109
+)
+
 // CommitSig is a part of the Vote included in a Commit.
 type CommitSig struct {
 	BlockIDFlag      BlockIDFlag `json:"block_id_flag"`
@@ -593,9 +619,10 @@ func NewCommitSigForBlock(signature []byte, valAddr Address, ts time.Time) Commi
 	}
 }
 
-// ForBlock returns true if CommitSig is for the block.
-func (cs CommitSig) ForBlock() bool {
-	return cs.BlockIDFlag == BlockIDFlagCommit
+func MaxCommitBytes(valCount int) int64 {
+	// From the repeated commit sig field
+	var protoEncodingOverhead int64 = 2
+	return MaxCommitOverheadBytes + ((MaxCommitSigBytes + protoEncodingOverhead) * int64(valCount))
 }
 
 // NewCommitSigAbsent returns new CommitSig with BlockIDFlagAbsent. Other
@@ -604,6 +631,11 @@ func NewCommitSigAbsent() CommitSig {
 	return CommitSig{
 		BlockIDFlag: BlockIDFlagAbsent,
 	}
+}
+
+// ForBlock returns true if CommitSig is for the block.
+func (cs CommitSig) ForBlock() bool {
+	return cs.BlockIDFlag == BlockIDFlagCommit
 }
 
 // Absent returns true if CommitSig is absent.
@@ -931,10 +963,7 @@ func (commit *Commit) ToProto() *tmproto.Commit {
 	c.Height = commit.Height
 	c.Round = commit.Round
 	c.BlockID = commit.BlockID.ToProto()
-	if commit.hash != nil {
-		c.Hash = commit.hash
-	}
-	c.BitArray = commit.bitArray.ToProto()
+
 	return c
 }
 
@@ -946,16 +975,13 @@ func CommitFromProto(cp *tmproto.Commit) (*Commit, error) {
 	}
 
 	var (
-		commit   = new(Commit)
-		bitArray *bits.BitArray
+		commit = new(Commit)
 	)
 
 	bi, err := BlockIDFromProto(&cp.BlockID)
 	if err != nil {
 		return nil, err
 	}
-
-	bitArray.FromProto(cp.BitArray)
 
 	sigs := make([]CommitSig, len(cp.Signatures))
 	for i := range cp.Signatures {
@@ -968,8 +994,6 @@ func CommitFromProto(cp *tmproto.Commit) (*Commit, error) {
 	commit.Height = cp.Height
 	commit.Round = cp.Round
 	commit.BlockID = *bi
-	commit.hash = cp.Hash
-	commit.bitArray = bitArray
 
 	return commit, commit.ValidateBasic()
 }
@@ -1031,10 +1055,6 @@ func (data *Data) ToProto() tmproto.Data {
 		tp.Txs = txBzs
 	}
 
-	if data.hash != nil {
-		tp.Hash = data.hash
-	}
-
 	return *tp
 }
 
@@ -1056,8 +1076,6 @@ func DataFromProto(dp *tmproto.Data) (Data, error) {
 		data.Txs = Txs{}
 	}
 
-	data.hash = dp.Hash
-
 	return *data, nil
 }
 
@@ -1067,8 +1085,9 @@ func DataFromProto(dp *tmproto.Data) (Data, error) {
 type EvidenceData struct {
 	Evidence EvidenceList `json:"evidence"`
 
-	// Volatile
-	hash tmbytes.HexBytes
+	// Volatile. Used as cache
+	hash     tmbytes.HexBytes
+	byteSize int64
 }
 
 // Hash returns the hash of the data.
@@ -1077,6 +1096,18 @@ func (data *EvidenceData) Hash() tmbytes.HexBytes {
 		data.hash = data.Evidence.Hash()
 	}
 	return data.hash
+}
+
+// ByteSize returns the total byte size of all the evidence
+func (data *EvidenceData) ByteSize() int64 {
+	if data.byteSize == 0 && len(data.Evidence) != 0 {
+		pb, err := data.ToProto()
+		if err != nil {
+			panic(err)
+		}
+		data.byteSize = int64(pb.Size())
+	}
+	return data.byteSize
 }
 
 // StringIndented returns a string representation of the evidence.
@@ -1116,10 +1147,6 @@ func (data *EvidenceData) ToProto() (*tmproto.EvidenceData, error) {
 	}
 	evi.Evidence = eviBzs
 
-	if data.hash != nil {
-		evi.Hash = data.hash
-	}
-
 	return evi, nil
 }
 
@@ -1138,8 +1165,7 @@ func (data *EvidenceData) FromProto(eviData *tmproto.EvidenceData) error {
 		eviBzs[i] = evi
 	}
 	data.Evidence = eviBzs
-
-	data.hash = eviData.GetHash()
+	data.byteSize = int64(eviData.Size())
 
 	return nil
 }
@@ -1149,7 +1175,7 @@ func (data *EvidenceData) FromProto(eviData *tmproto.EvidenceData) error {
 // BlockID
 type BlockID struct {
 	Hash          tmbytes.HexBytes `json:"hash"`
-	PartSetHeader PartSetHeader    `json:"parts"`
+	PartSetHeader PartSetHeader    `json:"part_set_header"`
 }
 
 // Equals returns true if the BlockID matches the given BlockID

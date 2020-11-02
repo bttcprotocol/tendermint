@@ -17,7 +17,7 @@ var secp256k1halfN = new(big.Int).Rsh(secp256k1.S256().N, 1)
 
 // Sign creates an ECDSA signature on curve Secp256k1, using SHA256 on the msg.
 // The returned signature will be of the form R || S (in lower-S form).
-func (privKey PrivKeySecp256k1) Sign(msg []byte) ([]byte, error) {
+func (privKey PrivKey) Sign(msg []byte) ([]byte, error) {
 	// [peppermint] sign with ethcrypto
 	// priv, _ := secp256k1.PrivKeyFromBytes(secp256k1.S256(), privKey[:])
 	// sig, err := priv.Sign(crypto.Sha256(msg))
@@ -32,7 +32,7 @@ func (privKey PrivKeySecp256k1) Sign(msg []byte) ([]byte, error) {
 
 // VerifyBytes verifies a signature of the form R || S.
 // It rejects signatures which are not in lower-S form.
-func (pubKey PubKeySecp256k1) VerifyBytes(msg []byte, sigStr []byte) bool {
+func (pubKey PubKey) VerifyBytes(msg []byte, sigStr []byte) bool {
 	// if len(sigStr) != 64 {
 	// 	return false
 	// }
@@ -54,7 +54,7 @@ func (pubKey PubKeySecp256k1) VerifyBytes(msg []byte, sigStr []byte) bool {
 
 // VerifySignature verifies a signature of the form R || S.
 // It rejects signatures which are not in lower-S form.
-func (pubKey PubKeySecp256k1) VerifySignature(msg []byte, sigStr []byte) bool {
+func (pubKey PubKey) VerifySignature(msg []byte, sigStr []byte) bool {
 	// if len(sigStr) != 64 {
 	// 	return false
 	// }

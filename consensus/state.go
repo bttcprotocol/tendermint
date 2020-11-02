@@ -328,7 +328,7 @@ func (cs *State) OnStart() error {
 				return err
 			}
 
-			cs.Logger.Info("WAL file is corrupted. Attempting repair", "err", err)
+			cs.Logger.Error("WAL file is corrupted, attempting repair", "err", err)
 
 			// 1) prep work
 			if err := cs.wal.Stop(); err != nil {
@@ -345,7 +345,7 @@ func (cs *State) OnStart() error {
 
 			// 3) try to repair (WAL file will be overwritten!)
 			if err := repairWalFile(corruptedFile, cs.config.WalFile()); err != nil {
-				cs.Logger.Error("Repair failed", "err", err)
+				cs.Logger.Error("WAL repair failed", "err", err)
 				return err
 			}
 			cs.Logger.Info("Successful repair")
@@ -1781,16 +1781,23 @@ func (cs *State) addProposalBlockPart(msg *BlockPartMessage, peerID p2p.ID) (add
 	if err != nil {
 		return added, err
 	}
+	if cs.ProposalBlockParts.ByteSize() > cs.state.ConsensusParams.Block.MaxBytes {
+		return added, fmt.Errorf("total size of proposal block parts exceeds maximum block bytes (%d > %d)",
+			cs.ProposalBlockParts.ByteSize(), cs.state.ConsensusParams.Block.MaxBytes,
+		)
+	}
 	if added && cs.ProposalBlockParts.IsComplete() {
 		bz, err := ioutil.ReadAll(cs.ProposalBlockParts.GetReader())
 		if err != nil {
 			return added, err
 		}
+
 		var pbb = new(tmproto.Block)
 		err = proto.Unmarshal(bz, pbb)
 		if err != nil {
 			return added, err
 		}
+
 		block, err := types.BlockFromProto(pbb)
 		if err != nil {
 			return added, err
@@ -1866,10 +1873,13 @@ func (cs *State) tryAddVote(vote *types.Vote, peerID p2p.ID) (bool, error) {
 			} else {
 				timestamp = sm.MedianTime(cs.LastCommit.MakeCommit(), cs.LastValidators)
 			}
-			evidenceErr := cs.evpool.AddEvidenceFromConsensus(
-				types.NewDuplicateVoteEvidence(voteErr.VoteA, voteErr.VoteB), timestamp, cs.Validators)
+			evidence := types.NewDuplicateVoteEvidence(voteErr.VoteA, voteErr.VoteB)
+			evidenceErr := cs.evpool.AddEvidenceFromConsensus(evidence, timestamp, cs.Validators)
+
 			if evidenceErr != nil {
 				cs.Logger.Error("Failed to add evidence to the evidence pool", "err", evidenceErr)
+			} else {
+				cs.Logger.Debug("Added evidence to the evidence pool", "evidence", evidence)
 			}
 			return added, err
 		} else if err == types.ErrVoteNonDeterministicSignature {
@@ -2152,7 +2162,7 @@ func (cs *State) signAddVote(msgType tmproto.SignedMsgType, hash []byte, header 
 	}
 	// if !cs.replayMode {
 	cs.Logger.Error("Error signing vote", "height", cs.Height, "round", cs.Round, "vote", vote, "err", err)
-	//}
+	// }
 	return nil
 }
 
@@ -2225,7 +2235,7 @@ func repairWalFile(src, dst string) error {
 	}
 	defer in.Close()
 
-	out, err := os.Open(dst)
+	out, err := os.Create(dst)
 	if err != nil {
 		return err
 	}

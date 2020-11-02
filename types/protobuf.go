@@ -16,15 +16,15 @@ import (
 // Use strings to distinguish types in ABCI messages
 
 const (
-	ABCIPubKeyTypeEd25519   = "ed25519"
-	ABCIPubKeyTypeSecp256k1 = "secp256k1"
+	ABCIPubKeyTypeEd25519   = ed25519.KeyType
+	ABCIPubKeyTypeSecp256k1 = secp256k1.KeyType
 )
 
 // TODO: Make non-global by allowing for registration of more pubkey types
 
 var ABCIPubKeyTypesToNames = map[string]string{
 	ABCIPubKeyTypeEd25519:   ed25519.PubKeyName,
-	ABCIPubKeyTypeSecp256k1: secp256k1.PubKeyAminoName,
+	ABCIPubKeyTypeSecp256k1: secp256k1.PubKeyName,
 }
 
 //-------------------------------------------------------

@@ -22,7 +22,7 @@ func ExampleHTTP_simple() {
 	rpcAddr := rpctest.GetConfig().RPC.ListenAddress
 	c, err := rpchttp.New(rpcAddr, "/websocket")
 	if err != nil {
-		log.Printf("error on remote endpoint: %v", err)
+		log.Fatal(err) //nolint:gocritic
 	}
 
 	// Create a transaction
@@ -71,7 +71,6 @@ func ExampleHTTP_batching() {
 	// Start a tendermint node (and kvstore) in the background to test against
 	app := kvstore.NewApplication()
 	node := rpctest.StartTendermint(app, rpctest.SuppressStdout, rpctest.RecreateConfig)
-	defer rpctest.StopTendermint(node)
 
 	// Create our RPC client
 	rpcAddr := rpctest.GetConfig().RPC.ListenAddress
@@ -79,6 +78,8 @@ func ExampleHTTP_batching() {
 	if err != nil {
 		log.Printf("error on remote endpoint: %v", err)
 	}
+
+	defer rpctest.StopTendermint(node)
 
 	// Create our two transactions
 	k1 := []byte("firstName")
@@ -99,7 +100,7 @@ func ExampleHTTP_batching() {
 		// Broadcast the transaction and wait for it to commit (rather use
 		// c.BroadcastTxSync though in production).
 		if _, err := batch.BroadcastTxCommit(context.Background(), tx); err != nil {
-			log.Println(err)
+			log.Fatal(err) //nolint:gocritic
 		}
 	}
 

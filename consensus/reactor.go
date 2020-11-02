@@ -540,8 +540,8 @@ OUTER_LOOP:
 
 		// If height and round don't match, sleep.
 		if (rs.Height != prs.Height) || (rs.Round != prs.Round) {
-			// logger.Info(
-			// "Peer Height|Round mismatch, sleeping", "peerHeight", prs.Height, "peerRound", prs.Round, "peer", peer)
+			// logger.Info("Peer Height|Round mismatch, sleeping",
+			// "peerHeight", prs.Height, "peerRound", prs.Round, "peer", peer)
 			time.Sleep(conR.conS.config.PeerGossipSleepDuration)
 			continue OUTER_LOOP
 		}
@@ -623,7 +623,7 @@ func (conR *Reactor) gossipDataForCatchup(logger log.Logger, rs *cstypes.RoundSt
 		}
 		return
 	}
-	// logger.Info("No parts to send in catch-up, sleeping")
+	//  logger.Info("No parts to send in catch-up, sleeping")
 	time.Sleep(conR.conS.config.PeerGossipSleepDuration)
 }
 
@@ -651,7 +651,7 @@ OUTER_LOOP:
 		}
 
 		// logger.Debug("gossipVotesRoutine", "rsHeight", rs.Height, "rsRound", rs.Round,
-		//	"prsHeight", prs.Height, "prsRound", prs.Round, "prsStep", prs.Step)
+		// "prsHeight", prs.Height, "prsRound", prs.Round, "prsStep", prs.Step)
 
 		// If height matches, then send LastCommit, Prevotes, Precommits.
 		if rs.Height == prs.Height {

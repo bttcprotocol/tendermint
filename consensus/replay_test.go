@@ -353,9 +353,7 @@ func TestSimulateValidatorsChange(t *testing.T) {
 	signAddVotes(css[0], tmproto.PrecommitType, rs.ProposalBlock.Hash(), rs.ProposalBlockParts.Header(), vss[1:nVals]...)
 	ensureNewRound(newRoundCh, height+1, 0)
 
-	// ///////////////////////////////////////////////////////////////////////////
 	// HEIGHT 2
-	// ///////////////////////////////////////////////////////////////////////////
 	height++
 	incrementHeight(vss...)
 	newValidatorPubKey1, err := css[nVals].privValidator.GetPubKey()
@@ -385,9 +383,7 @@ func TestSimulateValidatorsChange(t *testing.T) {
 	signAddVotes(css[0], tmproto.PrecommitType, rs.ProposalBlock.Hash(), rs.ProposalBlockParts.Header(), vss[1:nVals]...)
 	ensureNewRound(newRoundCh, height+1, 0)
 
-	// ///////////////////////////////////////////////////////////////////////////
 	// HEIGHT 3
-	// ///////////////////////////////////////////////////////////////////////////
 	height++
 	incrementHeight(vss...)
 	updateValidatorPubKey1, err := css[nVals].privValidator.GetPubKey()
@@ -417,9 +413,7 @@ func TestSimulateValidatorsChange(t *testing.T) {
 	signAddVotes(css[0], tmproto.PrecommitType, rs.ProposalBlock.Hash(), rs.ProposalBlockParts.Header(), vss[1:nVals]...)
 	ensureNewRound(newRoundCh, height+1, 0)
 
-	// ///////////////////////////////////////////////////////////////////////////
 	// HEIGHT 4
-	// ///////////////////////////////////////////////////////////////////////////
 	height++
 	incrementHeight(vss...)
 	newValidatorPubKey2, err := css[nVals+1].privValidator.GetPubKey()
@@ -487,9 +481,7 @@ func TestSimulateValidatorsChange(t *testing.T) {
 
 	ensureNewRound(newRoundCh, height+1, 0)
 
-	// ///////////////////////////////////////////////////////////////////////////
 	// HEIGHT 5
-	// ///////////////////////////////////////////////////////////////////////////
 	height++
 	incrementHeight(vss...)
 	// Reflect the changes to vss[nVals] at height 3 and resort newVss.
@@ -507,9 +499,7 @@ func TestSimulateValidatorsChange(t *testing.T) {
 	}
 	ensureNewRound(newRoundCh, height+1, 0)
 
-	// ///////////////////////////////////////////////////////////////////////////
 	// HEIGHT 6
-	// ///////////////////////////////////////////////////////////////////////////
 	height++
 	incrementHeight(vss...)
 	removeValidatorTx3 := kvstore.MakeValSetChangeTx(newVal3ABCI, 0)
@@ -853,7 +843,7 @@ func buildTMStateFromChain(
 	if err := proxyApp.Start(); err != nil {
 		panic(err)
 	}
-	defer proxyApp.Stop() //nolint:errcheck //ignore
+	defer proxyApp.Stop() //nolint:errcheck
 
 	state.Version.Consensus.App = kvstore.ProtocolVersion // simulate handshake, receive app version
 	validators := types.TM2PB.ValidatorUpdates(state.Validators)
