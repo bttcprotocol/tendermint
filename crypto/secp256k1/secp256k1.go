@@ -48,8 +48,8 @@ func (privKey PrivKey) PubKey() crypto.PubKey {
 		panic(err)
 	}
 
-	var pubkey crypto.PubKey
-	copy(pubkey.Bytes()[:], ethCrypto.FromECDSAPub(&privateObject.PublicKey))
+	var pubkey PubKey
+	copy(pubkey[:], ethCrypto.FromECDSAPub(&privateObject.PublicKey))
 	return pubkey
 
 	// _, pubkeyObject := secp256k1.PrivKeyFromBytes(secp256k1.S256(), privKey[:])
@@ -100,6 +100,7 @@ func genPrivKey(rand io.Reader) PrivKey {
 
 	privKeyBytes := [PrivKeySize]byte{}
 	_, err := io.ReadFull(rand, privKeyBytes[:])
+
 	if err != nil {
 		panic(err)
 	}
