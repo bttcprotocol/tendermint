@@ -13,7 +13,6 @@ import (
 
 	"github.com/tendermint/tendermint/crypto"
 	// nolint: staticcheck // necessary for Bitcoin address format
-	"github.com/tendermint/tendermint/crypto"
 	tmjson "github.com/tendermint/tendermint/libs/json"
 )
 
@@ -43,15 +42,15 @@ func (privKey PrivKey) Bytes() []byte {
 
 // PubKey performs the point-scalar multiplication from the privKey on the
 // generator point to get the pubkey.
-func (privKey PrivKeySecp256k1) PubKey() crypto.PubKey {
+func (privKey PrivKey) PubKey() crypto.PubKey {
 	privateObject, err := ethCrypto.ToECDSA(privKey[:])
 	if err != nil {
 		panic(err)
 	}
 
-	var pubkeyBytes PubKeySecp256k1
-	copy(pubkeyBytes[:], ethCrypto.FromECDSAPub(&privateObject.PublicKey))
-	return pubkeyBytes
+	var pubkey crypto.PubKey
+	copy(pubkey.Bytes()[:], ethCrypto.FromECDSAPub(&privateObject.PublicKey))
+	return pubkey
 
 	// _, pubkeyObject := secp256k1.PrivKeyFromBytes(secp256k1.S256(), privKey[:])
 	// var pubkeyBytes PubKeySecp256k1
@@ -154,7 +153,7 @@ const PubKeySize = 65
 // if the y-coordinate is the lexicographically largest of the two associated with
 // the x-coordinate. Otherwise the first byte is a 0x03.
 // This prefix is followed with the x-coordinate.
-type PubKey [PubKeySize]byte
+type PubKey []byte
 
 // Address returns a Bitcoin style addresses: RIPEMD160(SHA256(pubkey))
 func (pubKey PubKey) Address() crypto.Address {
@@ -174,15 +173,15 @@ func (pubKey PubKey) Bytes() []byte {
 	return []byte(pubKey)
 }
 
-func (pubKey PubKeySecp256k1) String() string {
+func (pubKey PubKey) String() string {
 	return fmt.Sprintf("PubKeySecp256k1{%X}", pubKey[:])
 }
 
 func (pubKey PubKey) Type() string {
-	return keyType
+	return KeyType
 }
 
-func (pubKey PubKeySecp256k1) Equals(other crypto.PubKey) bool {
+func (pubKey PubKey) Equals(other crypto.PubKey) bool {
 	if otherSecp, ok := other.(PubKey); ok {
 		return bytes.Equal(pubKey[:], otherSecp[:])
 	}
