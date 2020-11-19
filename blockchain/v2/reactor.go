@@ -389,6 +389,10 @@ func (r *BlockchainReactor) demux(events <-chan Event) {
 			case scSchedulerFail:
 				r.logger.Error("Scheduler failure", "err", event.reason.Error())
 			case scPeersPruned:
+				// Remove peers from the processor.
+				for _, peerID := range event.peers {
+					r.processor.send(scPeerError{peerID: peerID, reason: errors.New("peer was pruned")})
+				}
 				r.logger.Debug("Pruned peers", "count", len(event.peers))
 			case noOpEvent:
 			default:
@@ -451,6 +455,8 @@ func (r *BlockchainReactor) Stop() error {
 }
 
 // Receive implements Reactor by handling different message types.
+// XXX: do not call any methods that can block or incur heavy processing.
+// https://github.com/tendermint/tendermint/issues/2888
 func (r *BlockchainReactor) Receive(chID byte, src p2p.Peer, msgBytes []byte) {
 	msg, err := bc.DecodeMsg(msgBytes)
 	if err != nil {
