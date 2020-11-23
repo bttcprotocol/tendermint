@@ -17,7 +17,6 @@ import (
 	tmos "github.com/tendermint/tendermint/libs/os"
 	tmrand "github.com/tendermint/tendermint/libs/rand"
 	"github.com/tendermint/tendermint/p2p"
-	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	cs "github.com/tendermint/tendermint/test/maverick/consensus"
 	nd "github.com/tendermint/tendermint/test/maverick/node"
 	"github.com/tendermint/tendermint/types"
@@ -157,17 +156,10 @@ func startNode(config *cfg.Config, logger log.Logger, misbehaviorFlag string) er
 	select {}
 }
 
-var keyType string
-
 var InitFilesCmd = &cobra.Command{
 	Use:   "init",
 	Short: "Initialize Tendermint",
 	RunE:  initFiles,
-}
-
-func init() {
-	InitFilesCmd.Flags().StringVar(&keyType, "key", types.ABCIPubKeyTypeEd25519,
-		"Key type to generate privval file with. Options: ed25519, secp256k1")
 }
 
 func initFiles(cmd *cobra.Command, args []string) error {
@@ -209,11 +201,6 @@ func initFilesWithConfig(config *cfg.Config) error {
 			ChainID:         fmt.Sprintf("test-chain-%v", tmrand.Str(6)),
 			GenesisTime:     tmtime.Now(),
 			ConsensusParams: types.DefaultConsensusParams(),
-		}
-		if keyType == "secp256k1" {
-			genDoc.ConsensusParams.Validator = tmproto.ValidatorParams{
-				PubKeyTypes: []string{types.ABCIPubKeyTypeSecp256k1},
-			}
 		}
 		pubKey, err := pv.GetPubKey()
 		if err != nil {

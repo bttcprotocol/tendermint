@@ -42,8 +42,6 @@ Note also that Tendermint 0.34 also requires Go 1.15 or higher.
 * The field `Proof`, on the ABCI type `ResponseQuery`, is now named `ProofOps`.
   For more, see "Crypto," below.
 
-* The method `SetOption` has been removed from the ABCI.Client interface. This feature was used in the early ABCI implementation's.
-
 ### P2P Protocol
 
 The default codec is now proto3, not amino. The schema files can be found in the `/proto`
@@ -51,9 +49,12 @@ directory. For more, see "Protobuf," below.
 
 ### Blockchain Protocol
 
-* `Header#LastResultsHash`, which is the root hash of a Merkle tree built from
-`ResponseDeliverTx(Code, Data)` as of v0.34 also includes `GasWanted` and `GasUsed`
-fields.
+* `Header#LastResultsHash` previously was the root hash of a Merkle tree built from `ResponseDeliverTx(Code, Data)` responses.
+  As of 0.34,`Header#LastResultsHash` is now the root hash of a Merkle tree built from:
+    * `BeginBlock#Events`
+    * Root hash of a Merkle tree built from `ResponseDeliverTx(Code, Data,
+      GasWanted, GasUsed, Events)` responses
+    * `BeginBlock#Events`
 
 * Merkle hashes of empty trees previously returned nothing, but now return the hash of an empty input,
   to conform with [RFC-6962](https://tools.ietf.org/html/rfc6962).
@@ -157,7 +158,6 @@ Other user-relevant changes include:
 * The `Verifier` was broken up into two pieces:
     * Core verification logic (pure `VerifyX` functions)
     * `Client` object, which represents the complete light client
-* The new light clients stores headers & validator sets as `LightBlock`s
 * The RPC client can be found in the `/rpc` directory.
 * The HTTP(S) proxy is located in the `/proxy` directory.
 

@@ -15,7 +15,6 @@ import (
 	tmrand "github.com/tendermint/tendermint/libs/rand"
 	"github.com/tendermint/tendermint/p2p"
 	"github.com/tendermint/tendermint/privval"
-	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	"github.com/tendermint/tendermint/types"
 	tmtime "github.com/tendermint/tendermint/types/time"
 )
@@ -75,8 +74,6 @@ func init() {
 		"P2P Port")
 	TestnetFilesCmd.Flags().BoolVar(&randomMonikers, "random-monikers", false,
 		"randomize the moniker for each generated node")
-	TestnetFilesCmd.Flags().StringVar(&keyType, "key", types.ABCIPubKeyTypeEd25519,
-		"Key type to generate privval file with. Options: ed25519, secp256k1")
 }
 
 // TestnetFilesCmd allows initialisation of files for a Tendermint testnet.
@@ -183,15 +180,10 @@ func testnetFiles(cmd *cobra.Command, args []string) error {
 	// Generate genesis doc from generated validators
 	genDoc := &types.GenesisDoc{
 		ChainID:         "chain-" + tmrand.Str(6),
+		ConsensusParams: types.DefaultConsensusParams(),
 		GenesisTime:     tmtime.Now(),
 		InitialHeight:   initialHeight,
 		Validators:      genVals,
-		ConsensusParams: types.DefaultConsensusParams(),
-	}
-	if keyType == "secp256k1" {
-		genDoc.ConsensusParams.Validator = tmproto.ValidatorParams{
-			PubKeyTypes: []string{types.ABCIPubKeyTypeSecp256k1},
-		}
 	}
 
 	// Write genesis file.

@@ -194,6 +194,15 @@ func (cli *grpcClient) InfoAsync(params types.RequestInfo) *ReqRes {
 	return cli.finishAsyncCall(req, &types.Response{Value: &types.Response_Info{Info: res}})
 }
 
+func (cli *grpcClient) SetOptionAsync(params types.RequestSetOption) *ReqRes {
+	req := types.ToRequestSetOption(params)
+	res, err := cli.client.SetOption(context.Background(), req.GetSetOption(), grpc.WaitForReady(true))
+	if err != nil {
+		cli.StopForError(err)
+	}
+	return cli.finishAsyncCall(req, &types.Response{Value: &types.Response_SetOption{SetOption: res}})
+}
+
 func (cli *grpcClient) DeliverTxAsync(params types.RequestDeliverTx) *ReqRes {
 	req := types.ToRequestDeliverTx(params)
 	res, err := cli.client.DeliverTx(context.Background(), req.GetDeliverTx(), grpc.WaitForReady(true))
@@ -347,6 +356,11 @@ func (cli *grpcClient) InfoSync(req types.RequestInfo) (*types.ResponseInfo, err
 	return cli.finishSyncCall(reqres).GetInfo(), cli.Error()
 }
 
+func (cli *grpcClient) SetOptionSync(req types.RequestSetOption) (*types.ResponseSetOption, error) {
+	reqres := cli.SetOptionAsync(req)
+	return reqres.Response.GetSetOption(), cli.Error()
+}
+
 func (cli *grpcClient) DeliverTxSync(params types.RequestDeliverTx) (*types.ResponseDeliverTx, error) {
 	reqres := cli.DeliverTxAsync(params)
 	return cli.finishSyncCall(reqres).GetDeliverTx(), cli.Error()
@@ -382,6 +396,28 @@ func (cli *grpcClient) EndBlockSync(params types.RequestEndBlock) (*types.Respon
 	return cli.finishSyncCall(reqres).GetEndBlock(), cli.Error()
 }
 
+func (cli *grpcClient) ListSnapshotsSync(params types.RequestListSnapshots) (*types.ResponseListSnapshots, error) {
+	reqres := cli.ListSnapshotsAsync(params)
+	return cli.finishSyncCall(reqres).GetListSnapshots(), cli.Error()
+}
+
+func (cli *grpcClient) OfferSnapshotSync(params types.RequestOfferSnapshot) (*types.ResponseOfferSnapshot, error) {
+	reqres := cli.OfferSnapshotAsync(params)
+	return cli.finishSyncCall(reqres).GetOfferSnapshot(), cli.Error()
+}
+
+func (cli *grpcClient) LoadSnapshotChunkSync(
+	params types.RequestLoadSnapshotChunk) (*types.ResponseLoadSnapshotChunk, error) {
+	reqres := cli.LoadSnapshotChunkAsync(params)
+	return cli.finishSyncCall(reqres).GetLoadSnapshotChunk(), cli.Error()
+}
+
+func (cli *grpcClient) ApplySnapshotChunkSync(
+	params types.RequestApplySnapshotChunk) (*types.ResponseApplySnapshotChunk, error) {
+	reqres := cli.ApplySnapshotChunkAsync(params)
+	return cli.finishSyncCall(reqres).GetApplySnapshotChunk(), cli.Error()
+}
+
 //
 // Side channel
 //
@@ -412,26 +448,4 @@ func (cli *grpcClient) BeginSideBlockSync(params types.RequestBeginSideBlock) (*
 func (cli *grpcClient) DeliverSideTxSync(params types.RequestDeliverSideTx) (*types.ResponseDeliverSideTx, error) {
 	reqres := cli.DeliverSideTxAsync(params)
 	return reqres.Response.GetDeliverSideTx(), cli.Error()
-}
-
-func (cli *grpcClient) ListSnapshotsSync(params types.RequestListSnapshots) (*types.ResponseListSnapshots, error) {
-	reqres := cli.ListSnapshotsAsync(params)
-	return cli.finishSyncCall(reqres).GetListSnapshots(), cli.Error()
-}
-
-func (cli *grpcClient) OfferSnapshotSync(params types.RequestOfferSnapshot) (*types.ResponseOfferSnapshot, error) {
-	reqres := cli.OfferSnapshotAsync(params)
-	return cli.finishSyncCall(reqres).GetOfferSnapshot(), cli.Error()
-}
-
-func (cli *grpcClient) LoadSnapshotChunkSync(
-	params types.RequestLoadSnapshotChunk) (*types.ResponseLoadSnapshotChunk, error) {
-	reqres := cli.LoadSnapshotChunkAsync(params)
-	return cli.finishSyncCall(reqres).GetLoadSnapshotChunk(), cli.Error()
-}
-
-func (cli *grpcClient) ApplySnapshotChunkSync(
-	params types.RequestApplySnapshotChunk) (*types.ResponseApplySnapshotChunk, error) {
-	reqres := cli.ApplySnapshotChunkAsync(params)
-	return cli.finishSyncCall(reqres).GetApplySnapshotChunk(), cli.Error()
 }

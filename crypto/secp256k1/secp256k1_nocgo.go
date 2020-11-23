@@ -83,14 +83,14 @@ func signatureFromBytes(sigStr []byte) *secp256k1.Signature {
 	}
 }
 
-// // Serialize signature to R || S.
-// // R, S are padded to 32 bytes respectively.
-// func serializeSig(sig *secp256k1.Signature) []byte {
-// 	rBytes := sig.R.Bytes()
-// 	sBytes := sig.S.Bytes()
-// 	sigBytes := make([]byte, 64)
-// 	// 0 pad the byte arrays from the left if they aren't big enough.
-// 	copy(sigBytes[32-len(rBytes):32], rBytes)
-// 	copy(sigBytes[64-len(sBytes):64], sBytes)
-// 	return sigBytes
-// }
+// Serialize signature to R || S.
+// R, S are padded to 32 bytes respectively.
+func serializeSig(sig *secp256k1.Signature) []byte {
+	rBytes := sig.R.Bytes()
+	sBytes := sig.S.Bytes()
+	sigBytes := make([]byte, 64)
+	// 0 pad the byte arrays from the left if they aren't big enough.
+	copy(sigBytes[32-len(rBytes):32], rBytes)
+	copy(sigBytes[64-len(sBytes):64], sBytes)
+	return sigBytes
+}
