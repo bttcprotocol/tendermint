@@ -62,6 +62,10 @@ func (app *PersistentKVStoreApplication) Info(req types.RequestInfo) types.Respo
 	return res
 }
 
+func (app *PersistentKVStoreApplication) SetOption(req types.RequestSetOption) types.ResponseSetOption {
+	return app.app.SetOption(req)
+}
+
 // tx is either "val:pubkey!power" or "key=value" or just arbitrary bytes
 func (app *PersistentKVStoreApplication) DeliverTx(req types.RequestDeliverTx) types.ResponseDeliverTx {
 	// if it starts with "val:", update the validator set
@@ -146,17 +150,6 @@ func (app *PersistentKVStoreApplication) EndBlock(req types.RequestEndBlock) typ
 	return types.ResponseEndBlock{ValidatorUpdates: app.ValUpdates}
 }
 
-//
-// Side channel functions
-//
-
-func (app *PersistentKVStoreApplication) BeginSideBlock(req types.RequestBeginSideBlock) types.ResponseBeginSideBlock {
-	return app.app.BeginSideBlock(req)
-}
-
-func (app *PersistentKVStoreApplication) DeliverSideTx(req types.RequestDeliverSideTx) types.ResponseDeliverSideTx {
-	return app.app.DeliverSideTx(req)
-}
 func (app *PersistentKVStoreApplication) ListSnapshots(
 	req types.RequestListSnapshots) types.ResponseListSnapshots {
 	return types.ResponseListSnapshots{}
@@ -175,6 +168,18 @@ func (app *PersistentKVStoreApplication) OfferSnapshot(
 func (app *PersistentKVStoreApplication) ApplySnapshotChunk(
 	req types.RequestApplySnapshotChunk) types.ResponseApplySnapshotChunk {
 	return types.ResponseApplySnapshotChunk{Result: types.ResponseApplySnapshotChunk_ABORT}
+}
+
+//
+// Side channel functions
+//
+
+func (app *PersistentKVStoreApplication) BeginSideBlock(req types.RequestBeginSideBlock) types.ResponseBeginSideBlock {
+	return app.app.BeginSideBlock(req)
+}
+
+func (app *PersistentKVStoreApplication) DeliverSideTx(req types.RequestDeliverSideTx) types.ResponseDeliverSideTx {
+	return app.app.DeliverSideTx(req)
 }
 
 //---------------------------------------------

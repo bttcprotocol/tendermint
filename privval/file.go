@@ -227,18 +227,15 @@ func loadFilePV(keyFilePath, stateFilePath string, loadState bool) *FilePV {
 
 // LoadOrGenFilePV loads a FilePV from the given filePaths
 // or else generates a new one and saves it to the filePaths.
-func LoadOrGenFilePV(keyFilePath, stateFilePath string) (*FilePV, error) {
-	var (
-		pv  *FilePV
-		err error
-	)
+func LoadOrGenFilePV(keyFilePath, stateFilePath string) *FilePV {
+	var pv *FilePV
 	if tmos.FileExists(keyFilePath) {
 		pv = LoadFilePV(keyFilePath, stateFilePath)
 	} else {
-		pv, err = GenFilePV(keyFilePath, stateFilePath, "")
+		pv = GenFilePV(keyFilePath, stateFilePath)
 		pv.Save()
 	}
-	return pv, err
+	return pv
 }
 
 // GetAddress returns the address of the validator.
@@ -268,16 +265,6 @@ func (pv *FilePV) SignProposal(chainID string, proposal *tmproto.Proposal) error
 	if err := pv.signProposal(chainID, proposal); err != nil {
 		return fmt.Errorf("error signing proposal: %v", err)
 	}
-	return nil
-}
-
-// SignSideTxResult signs given data bytes
-func (pv *FilePV) SignSideTxResult(sideTxResult *types.SideTxResultWithData) error {
-	sig, err := pv.Key.PrivKey.Sign(sideTxResult.GetBytes())
-	if err != nil {
-		return err
-	}
-	sideTxResult.Sig = sig
 	return nil
 }
 
@@ -448,4 +435,18 @@ func checkProposalsOnlyDifferByTimestamp(lastSignBytes, newSignBytes []byte) (ti
 	newProposal.Timestamp = now
 
 	return lastTime, proto.Equal(&newProposal, &lastProposal)
+}
+
+//
+// Peppermint changes
+//
+
+// SignSideTxResult signs given data bytes
+func (pv *FilePV) SignSideTxResult(sideTxResult *types.SideTxResultWithData) error {
+	sig, err := pv.Key.PrivKey.Sign(sideTxResult.GetBytes())
+	if err != nil {
+		return err
+	}
+	sideTxResult.Sig = sig
+	return nil
 }

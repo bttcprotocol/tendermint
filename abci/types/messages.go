@@ -87,6 +87,12 @@ func ToRequestInfo(req RequestInfo) *Request {
 	}
 }
 
+func ToRequestSetOption(req RequestSetOption) *Request {
+	return &Request{
+		Value: &Request_SetOption{&req},
+	}
+}
+
 func ToRequestDeliverTx(req RequestDeliverTx) *Request {
 	return &Request{
 		Value: &Request_DeliverTx{&req},

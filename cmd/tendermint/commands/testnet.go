@@ -15,7 +15,6 @@ import (
 	tmrand "github.com/tendermint/tendermint/libs/rand"
 	"github.com/tendermint/tendermint/p2p"
 	"github.com/tendermint/tendermint/privval"
-	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	"github.com/tendermint/tendermint/types"
 	tmtime "github.com/tendermint/tendermint/types/time"
 )
@@ -181,15 +180,10 @@ func testnetFiles(cmd *cobra.Command, args []string) error {
 	// Generate genesis doc from generated validators
 	genDoc := &types.GenesisDoc{
 		ChainID:         "chain-" + tmrand.Str(6),
+		ConsensusParams: types.DefaultConsensusParams(),
 		GenesisTime:     tmtime.Now(),
 		InitialHeight:   initialHeight,
 		Validators:      genVals,
-		ConsensusParams: types.DefaultConsensusParams(),
-	}
-	if keyType == "secp256k1" {
-		genDoc.ConsensusParams.Validator = tmproto.ValidatorParams{
-			PubKeyTypes: []string{types.ABCIPubKeyTypeSecp256k1},
-		}
 	}
 
 	// Write genesis file.

@@ -10,8 +10,9 @@ import (
 // except CheckTx/DeliverTx, which take `tx []byte`, and `Commit`, which takes nothing.
 type Application interface {
 	// Info/Query Connection
-	Info(RequestInfo) ResponseInfo    // Return application info
-	Query(RequestQuery) ResponseQuery // Query for state
+	Info(RequestInfo) ResponseInfo                // Return application info
+	SetOption(RequestSetOption) ResponseSetOption // Set application option
+	Query(RequestQuery) ResponseQuery             // Query for state
 
 	// Mempool Connection
 	CheckTx(RequestCheckTx) ResponseCheckTx // Validate a tx for the mempool
@@ -23,14 +24,15 @@ type Application interface {
 	EndBlock(RequestEndBlock) ResponseEndBlock       // Signals the end of a block, returns changes to the validator set
 	Commit() ResponseCommit                          // Commit the state and return the application Merkle root hash
 
-	// Consensus side connection
-	BeginSideBlock(RequestBeginSideBlock) ResponseBeginSideBlock // Signals the beginning of a block with side txs
-	DeliverSideTx(RequestDeliverSideTx) ResponseDeliverSideTx    // Deliver a tx for full state-less processing
 	// State Sync Connection
 	ListSnapshots(RequestListSnapshots) ResponseListSnapshots                // List available snapshots
 	OfferSnapshot(RequestOfferSnapshot) ResponseOfferSnapshot                // Offer a snapshot to the application
 	LoadSnapshotChunk(RequestLoadSnapshotChunk) ResponseLoadSnapshotChunk    // Load a snapshot chunk
 	ApplySnapshotChunk(RequestApplySnapshotChunk) ResponseApplySnapshotChunk // Apply a shapshot chunk
+
+	// Consensus side connection
+	BeginSideBlock(RequestBeginSideBlock) ResponseBeginSideBlock // Signals the beginning of a block with side txs
+	DeliverSideTx(RequestDeliverSideTx) ResponseDeliverSideTx    // Deliver a tx for full state-less processing
 }
 
 //-------------------------------------------------------
@@ -47,6 +49,10 @@ func NewBaseApplication() *BaseApplication {
 
 func (BaseApplication) Info(req RequestInfo) ResponseInfo {
 	return ResponseInfo{}
+}
+
+func (BaseApplication) SetOption(req RequestSetOption) ResponseSetOption {
+	return ResponseSetOption{}
 }
 
 func (BaseApplication) DeliverTx(req RequestDeliverTx) ResponseDeliverTx {
@@ -124,6 +130,11 @@ func (app *GRPCApplication) Info(ctx context.Context, req *RequestInfo) (*Respon
 	return &res, nil
 }
 
+func (app *GRPCApplication) SetOption(ctx context.Context, req *RequestSetOption) (*ResponseSetOption, error) {
+	res := app.app.SetOption(*req)
+	return &res, nil
+}
+
 func (app *GRPCApplication) DeliverTx(ctx context.Context, req *RequestDeliverTx) (*ResponseDeliverTx, error) {
 	res := app.app.DeliverTx(*req)
 	return &res, nil
@@ -159,19 +170,6 @@ func (app *GRPCApplication) EndBlock(ctx context.Context, req *RequestEndBlock) 
 	return &res, nil
 }
 
-func (app *GRPCApplication) BeginSideBlock(
-	ctx context.Context,
-	req *RequestBeginSideBlock) (*ResponseBeginSideBlock, error) {
-	res := app.app.BeginSideBlock(*req)
-	return &res, nil
-}
-
-func (app *GRPCApplication) DeliverSideTx(
-	ctx context.Context, req *RequestDeliverSideTx) (*ResponseDeliverSideTx, error) {
-	res := app.app.DeliverSideTx(*req)
-	return &res, nil
-}
-
 func (app *GRPCApplication) ListSnapshots(
 	ctx context.Context, req *RequestListSnapshots) (*ResponseListSnapshots, error) {
 	res := app.app.ListSnapshots(*req)
@@ -193,5 +191,22 @@ func (app *GRPCApplication) LoadSnapshotChunk(
 func (app *GRPCApplication) ApplySnapshotChunk(
 	ctx context.Context, req *RequestApplySnapshotChunk) (*ResponseApplySnapshotChunk, error) {
 	res := app.app.ApplySnapshotChunk(*req)
+	return &res, nil
+}
+
+//
+// SideTX related methods
+//
+
+func (app *GRPCApplication) BeginSideBlock(
+	ctx context.Context,
+	req *RequestBeginSideBlock) (*ResponseBeginSideBlock, error) {
+	res := app.app.BeginSideBlock(*req)
+	return &res, nil
+}
+
+func (app *GRPCApplication) DeliverSideTx(
+	ctx context.Context, req *RequestDeliverSideTx) (*ResponseDeliverSideTx, error) {
+	res := app.app.DeliverSideTx(*req)
 	return &res, nil
 }
