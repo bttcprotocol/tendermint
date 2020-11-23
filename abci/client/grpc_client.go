@@ -347,6 +347,11 @@ func (cli *grpcClient) InfoSync(req types.RequestInfo) (*types.ResponseInfo, err
 	return cli.finishSyncCall(reqres).GetInfo(), cli.Error()
 }
 
+func (cli *grpcClient) SetOptionSync(req types.RequestSetOption) (*types.ResponseSetOption, error) {
+	reqres := cli.SetOptionAsync(req)
+	return reqres.Response.GetSetOption(), cli.Error()
+}
+
 func (cli *grpcClient) DeliverTxSync(params types.RequestDeliverTx) (*types.ResponseDeliverTx, error) {
 	reqres := cli.DeliverTxAsync(params)
 	return cli.finishSyncCall(reqres).GetDeliverTx(), cli.Error()
@@ -380,38 +385,6 @@ func (cli *grpcClient) BeginBlockSync(params types.RequestBeginBlock) (*types.Re
 func (cli *grpcClient) EndBlockSync(params types.RequestEndBlock) (*types.ResponseEndBlock, error) {
 	reqres := cli.EndBlockAsync(params)
 	return cli.finishSyncCall(reqres).GetEndBlock(), cli.Error()
-}
-
-//
-// Side channel
-//
-
-func (cli *grpcClient) DeliverSideTxAsync(params types.RequestDeliverSideTx) *ReqRes {
-	req := types.ToRequestDeliverSideTx(params)
-	res, err := cli.client.DeliverSideTx(context.Background(), req.GetDeliverSideTx(), grpc.WaitForReady(true))
-	if err != nil {
-		cli.StopForError(err)
-	}
-	return cli.finishAsyncCall(req, &types.Response{Value: &types.Response_DeliverSideTx{DeliverSideTx: res}})
-}
-
-func (cli *grpcClient) BeginSideBlockAsync(params types.RequestBeginSideBlock) *ReqRes {
-	req := types.ToRequestBeginSideBlock(params)
-	res, err := cli.client.BeginSideBlock(context.Background(), req.GetBeginSideBlock(), grpc.WaitForReady(true))
-	if err != nil {
-		cli.StopForError(err)
-	}
-	return cli.finishAsyncCall(req, &types.Response{Value: &types.Response_BeginSideBlock{BeginSideBlock: res}})
-}
-
-func (cli *grpcClient) BeginSideBlockSync(params types.RequestBeginSideBlock) (*types.ResponseBeginSideBlock, error) {
-	reqres := cli.BeginSideBlockAsync(params)
-	return reqres.Response.GetBeginSideBlock(), cli.Error()
-}
-
-func (cli *grpcClient) DeliverSideTxSync(params types.RequestDeliverSideTx) (*types.ResponseDeliverSideTx, error) {
-	reqres := cli.DeliverSideTxAsync(params)
-	return reqres.Response.GetDeliverSideTx(), cli.Error()
 }
 
 func (cli *grpcClient) ListSnapshotsSync(params types.RequestListSnapshots) (*types.ResponseListSnapshots, error) {
