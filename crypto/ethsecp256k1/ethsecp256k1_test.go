@@ -5,8 +5,10 @@ import (
 	"testing"
 
 	ethcrypto "github.com/maticnetwork/bor/crypto"
+	gethsecp256k1 "github.com/maticnetwork/bor/crypto/secp256k1"
 	"github.com/stretchr/testify/assert"
 
+	tmcrypto "github.com/tendermint/tendermint/crypto"
 	"github.com/tendermint/tendermint/crypto/ethsecp256k1"
 )
 
@@ -30,7 +32,7 @@ var secpDataTable = []keyData{
 	},
 }
 
-func TestPubKeyEthsecp256k1Address(t *testing.T) {
+func TestPubKey(t *testing.T) {
 	for _, d := range secpDataTable {
 		privBytes, _ := hex.DecodeString(d.priv)
 		pubBytes, _ := hex.DecodeString(d.pub)
@@ -44,74 +46,36 @@ func TestPubKeyEthsecp256k1Address(t *testing.T) {
 		pubk, err := ethcrypto.DecompressPubkey(pub.Bytes())
 		assert.NoError(t, err)
 
+		// validate pubkey and address
 		assert.Equal(t, ethcrypto.FromECDSAPub(pubk), ethsecp256k1.PubKey(pubBytes).Bytes(), "Expected pub keys to match")
 		assert.Equal(t, pubKey.Address().Bytes(), addrBytes, "Expected addresses to match")
 	}
 }
 
-// func TestSignAndValidateSecp256k1(t *testing.T) {
-// 	privKey := secp256k1.GenPrivKey()
-// 	pubKey := privKey.PubKey()
+func TestPrivKey(t *testing.T) {
+	// validate type and equality
+	privKey, err := ethsecp256k1.GenerateKey()
+	assert.NoError(t, err)
+	assert.True(t, privKey.Equals(privKey))
+	assert.Implements(t, (*tmcrypto.PrivKey)(nil), privKey)
 
-// 	msg := crypto.CRandBytes(128)
-// 	sig, err := privKey.Sign(msg)
-// 	require.Nil(t, err)
+	// validate inequality
+	privKey2, err := ethsecp256k1.GenerateKey()
+	assert.NoError(t, err)
+	assert.False(t, privKey.Equals(privKey2))
 
-// 	assert.True(t, pubKey.VerifySignature(msg, sig))
+	// validate Ethereum address equality
+	addr := privKey.PubKey().Address()
+	expectedAddr := ethcrypto.PubkeyToAddress(privKey.ToECDSA().PublicKey)
+	assert.Equal(t, expectedAddr.Bytes(), addr.Bytes())
 
-// 	// Mutate the signature, just one bit.
-// 	sig[3] ^= byte(0x01)
+	// validate we can sign some bytes
+	msg := []byte("hello world")
+	sigHash := ethcrypto.Keccak256Hash(msg)
+	expectedSig, err := gethsecp256k1.Sign(sigHash.Bytes(), privKey)
+	assert.NoError(t, err)
 
-// 	assert.False(t, pubKey.VerifySignature(msg, sig))
-// }
-
-// // This test is intended to justify the removal of calls to the underlying library
-// // in creating the privkey.
-// func TestSecp256k1LoadPrivkeyAndSerializeIsIdentity(t *testing.T) {
-// 	numberOfTests := 256
-// 	for i := 0; i < numberOfTests; i++ {
-// 		// Seed the test case with some random bytes
-// 		privKeyBytes := [32]byte{}
-// 		copy(privKeyBytes[:], crypto.CRandBytes(32))
-
-// 		// This function creates a private and public key in the underlying libraries format.
-// 		// The private key is basically calling new(big.Int).SetBytes(pk), which removes leading zero bytes
-// 		priv, _ := underlyingSecp256k1.PrivKeyFromBytes(underlyingSecp256k1.S256(), privKeyBytes[:])
-// 		// this takes the bytes returned by `(big int).Bytes()`, and if the length is less than 32 bytes,
-// 		// pads the bytes from the left with zero bytes. Therefore these two functions composed
-// 		// result in the identity function on privKeyBytes, hence the following equality check
-// 		// always returning true.
-// 		serializedBytes := priv.Serialize()
-// 		require.Equal(t, privKeyBytes[:], serializedBytes)
-// 	}
-// }
-
-// func TestGenPrivKeySecp256k1(t *testing.T) {
-// 	// curve oder N
-// 	N := underlyingSecp256k1.S256().N
-// 	tests := []struct {
-// 		name   string
-// 		secret []byte
-// 	}{
-// 		{"empty secret", []byte{}},
-// 		{
-// 			"some long secret",
-// 			[]byte("We live in a society exquisitely dependent on science and technology, " +
-// 				"in which hardly anyone knows anything about science and technology."),
-// 		},
-// 		{"another seed used in cosmos tests #1", []byte{0}},
-// 		{"another seed used in cosmos tests #2", []byte("mySecret")},
-// 		{"another seed used in cosmos tests #3", []byte("")},
-// 	}
-// 	for _, tt := range tests {
-// 		tt := tt
-// 		t.Run(tt.name, func(t *testing.T) {
-// 			gotPrivKey := secp256k1.GenPrivKeySecp256k1(tt.secret)
-// 			require.NotNil(t, gotPrivKey)
-// 			// interpret as a big.Int and make sure it is a valid field element:
-// 			fe := new(big.Int).SetBytes(gotPrivKey[:])
-// 			require.True(t, fe.Cmp(N) < 0)
-// 			require.True(t, fe.Sign() > 0)
-// 		})
-// 	}
-// }
+	sig, err := privKey.Sign(msg)
+	assert.NoError(t, err)
+	assert.Equal(t, expectedSig, sig)
+}
