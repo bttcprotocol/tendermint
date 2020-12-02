@@ -5,6 +5,7 @@ import (
 
 	"github.com/tendermint/tendermint/crypto"
 	"github.com/tendermint/tendermint/crypto/ed25519"
+	"github.com/tendermint/tendermint/crypto/ethsecp256k1"
 	"github.com/tendermint/tendermint/crypto/secp256k1"
 	"github.com/tendermint/tendermint/libs/json"
 	pc "github.com/tendermint/tendermint/proto/tendermint/crypto"
@@ -14,6 +15,7 @@ func init() {
 	json.RegisterType((*pc.PublicKey)(nil), "tendermint.crypto.PublicKey")
 	json.RegisterType((*pc.PublicKey_Ed25519)(nil), "tendermint.crypto.PublicKey_Ed25519")
 	json.RegisterType((*pc.PublicKey_Secp256K1)(nil), "tendermint.crypto.PublicKey_Secp256K1")
+	json.RegisterType((*pc.PublicKey_Ethsecp256K1)(nil), "tendermint.crypto.PublicKey_Ethsecp256K1")
 }
 
 // PubKeyToProto takes crypto.PubKey and transforms it to a protobuf Pubkey
@@ -30,6 +32,12 @@ func PubKeyToProto(k crypto.PubKey) (pc.PublicKey, error) {
 		kp = pc.PublicKey{
 			Sum: &pc.PublicKey_Secp256K1{
 				Secp256K1: k,
+			},
+		}
+	case ethsecp256k1.PubKey:
+		kp = pc.PublicKey{
+			Sum: &pc.PublicKey_Ethsecp256K1{
+				Ethsecp256K1: k,
 			},
 		}
 	default:
@@ -56,6 +64,14 @@ func PubKeyFromProto(k pc.PublicKey) (crypto.PubKey, error) {
 		}
 		pk := make(secp256k1.PubKey, secp256k1.PubKeySize)
 		copy(pk, k.Secp256K1)
+		return pk, nil
+	case *pc.PublicKey_Ethsecp256K1:
+		if len(k.Ethsecp256K1) != ethsecp256k1.PubKeySize {
+			return nil, fmt.Errorf("invalid size for PubKeyEthsecp256k1. Got %d, expected %d",
+				len(k.Ethsecp256K1), ethsecp256k1.PubKeySize)
+		}
+		pk := make(ethsecp256k1.PubKey, ethsecp256k1.PubKeySize)
+		copy(pk, k.Ethsecp256K1)
 		return pk, nil
 	default:
 		return nil, fmt.Errorf("fromproto: key type %v is not supported", k)
