@@ -225,9 +225,10 @@ func (vote *Vote) ValidateBasic() error {
 		}
 	}
 
-	// if len(vote.Signature) > MaxSignatureSize {
-	// 	return fmt.Errorf("Signature is too big (max: %d)", MaxSignatureSize)
-	// }
+	if len(vote.Signature) > MaxSignatureSize {
+		return fmt.Errorf("Signature is too big (max: %d)", MaxSignatureSize)
+	}
+
 	return nil
 }
 

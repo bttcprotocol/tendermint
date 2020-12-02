@@ -16,6 +16,8 @@ const (
 	PrivKeySize = 32
 	// KeyType is the string constant for the EthSecp256k1 algorithm
 	KeyType = "ethsecp256k1"
+	// SignatureSize is the size for sig data
+	SignatureSize = 65
 )
 
 // Amino encoding names
