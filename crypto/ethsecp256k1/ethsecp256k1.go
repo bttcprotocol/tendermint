@@ -16,6 +16,8 @@ const (
 	PrivKeySize = 32
 	// KeyType is the string constant for the EthSecp256k1 algorithm
 	KeyType = "ethsecp256k1"
+	// SignatureSize is the size for sig data
+	SignatureSize = 65
 )
 
 // Amino encoding names
@@ -101,6 +103,10 @@ var _ tmcrypto.PubKey = (*PubKey)(nil)
 // PubKey defines a type alias for an ecdsa.PublicKey that implements Tendermint's PubKey
 // interface. It represents the 33-byte compressed public key format.
 type PubKey []byte
+
+// PubKeySize is comprised of 32 bytes for one field element
+// (the x-coordinate), plus one byte for the parity of the y-coordinate.
+const PubKeySize = 33
 
 // Address returns the address of the ECDSA public key.
 // The function will panic if the public key is invalid.
