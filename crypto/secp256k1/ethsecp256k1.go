@@ -1,4 +1,4 @@
-package ethsecp256k1
+package secp256k1
 
 import (
 	"bytes"
@@ -15,7 +15,7 @@ const (
 	// PrivKeySize defines the size of the PrivKey bytes
 	PrivKeySize = 32
 	// KeyType is the string constant for the EthSecp256k1 algorithm
-	KeyType = "ethsecp256k1"
+	KeyType = "secp256k1"
 	// SignatureSize is the size for sig data
 	SignatureSize = 65
 )
@@ -23,9 +23,9 @@ const (
 // Amino encoding names
 const (
 	// PrivKeyName defines the amino encoding name for the EthSecp256k1 private key
-	PrivKeyName = "peppermint/PrivKeyEthSecp256k1"
+	PrivKeyName = "tendermint/PrivKeySecp256k1"
 	// PubKeyName defines the amino encoding name for the EthSecp256k1 public key
-	PubKeyName = "peppermint/PubKeyEthSecp256k1"
+	PubKeyName = "tendermint/PubKeySecp256k1"
 )
 
 func init() {
@@ -42,15 +42,15 @@ var _ tmcrypto.PrivKey = PrivKey{}
 // Tendermint's PrivateKey interface.
 type PrivKey []byte
 
-// GenerateKey generates a new random private key. It returns an error upon
+// GenPrivKey generates a new random private key. It returns an error upon
 // failure.
-func GenerateKey() (PrivKey, error) {
+func GenPrivKey() PrivKey {
 	priv, err := ethcrypto.GenerateKey()
 	if err != nil {
-		return PrivKey{}, err
+		return PrivKey{}
 	}
 
-	return PrivKey(ethcrypto.FromECDSA(priv)), nil
+	return PrivKey(ethcrypto.FromECDSA(priv))
 }
 
 // PubKey returns the ECDSA private key's public key.

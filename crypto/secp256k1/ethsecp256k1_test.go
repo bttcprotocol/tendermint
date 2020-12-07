@@ -1,4 +1,4 @@
-package ethsecp256k1_test
+package secp256k1_test
 
 import (
 	"encoding/hex"
@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	tmcrypto "github.com/tendermint/tendermint/crypto"
-	"github.com/tendermint/tendermint/crypto/ethsecp256k1"
+	"github.com/tendermint/tendermint/crypto/secp256k1"
 )
 
 type keyData struct {
@@ -38,29 +38,29 @@ func TestPubKey(t *testing.T) {
 		pubBytes, _ := hex.DecodeString(d.pub)
 		addrBytes, _ := hex.DecodeString(d.addr)
 
-		var priv ethsecp256k1.PrivKey = ethsecp256k1.PrivKey(privBytes)
+		var priv secp256k1.PrivKey = secp256k1.PrivKey(privBytes)
 		pubKey := priv.PubKey()
-		pub, _ := pubKey.(ethsecp256k1.PubKey)
+		pub, _ := pubKey.(secp256k1.PubKey)
 
 		// decompress pub key
 		pubk, err := ethcrypto.DecompressPubkey(pub.Bytes())
 		assert.NoError(t, err)
 
 		// validate pubkey and address
-		assert.Equal(t, ethcrypto.FromECDSAPub(pubk), ethsecp256k1.PubKey(pubBytes).Bytes(), "Expected pub keys to match")
+		assert.Equal(t, ethcrypto.FromECDSAPub(pubk), secp256k1.PubKey(pubBytes).Bytes(), "Expected pub keys to match")
 		assert.Equal(t, pubKey.Address().Bytes(), addrBytes, "Expected addresses to match")
 	}
 }
 
 func TestPrivKey(t *testing.T) {
 	// validate type and equality
-	privKey, err := ethsecp256k1.GenerateKey()
+	privKey, err := secp256k1.GenerateKey()
 	assert.NoError(t, err)
 	assert.True(t, privKey.Equals(privKey))
 	assert.Implements(t, (*tmcrypto.PrivKey)(nil), privKey)
 
 	// validate inequality
-	privKey2, err := ethsecp256k1.GenerateKey()
+	privKey2, err := secp256k1.GenerateKey()
 	assert.NoError(t, err)
 	assert.False(t, privKey.Equals(privKey2))
 

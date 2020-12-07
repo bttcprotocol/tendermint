@@ -1,7 +1,7 @@
 package types
 
 import (
-	"github.com/tendermint/tendermint/crypto/ethsecp256k1"
+	"github.com/tendermint/tendermint/crypto/secp256k1"
 	tmmath "github.com/tendermint/tendermint/libs/math"
 )
 
@@ -10,7 +10,7 @@ var (
 	// and Vote.
 	// XXX: secp256k1 does not have Size nor MaxSize defined.
 	// MaxSignatureSize = tmmath.MaxInt(ed25519.SignatureSize, 64)
-	MaxSignatureSize = tmmath.MaxInt(ethsecp256k1.SignatureSize, 64)
+	MaxSignatureSize = tmmath.MaxInt(secp256k1.SignatureSize, 64)
 )
 
 // Signable is an interface for all signable things.
