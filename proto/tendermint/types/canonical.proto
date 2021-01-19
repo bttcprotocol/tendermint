@@ -25,8 +25,6 @@ message CanonicalProposal {
   CanonicalBlockID          block_id  = 5 [(gogoproto.customname) = "BlockID"];
   google.protobuf.Timestamp timestamp = 6 [(gogoproto.nullable) = false, (gogoproto.stdtime) = true];
   string                    chain_id  = 7 [(gogoproto.customname) = "ChainID"];
-  bytes                     data      = 8; // [peppermint] add data in proposal to that signers can sign
-
 }
 
 message CanonicalVote {
@@ -37,6 +35,5 @@ message CanonicalVote {
   google.protobuf.Timestamp timestamp = 5 [(gogoproto.nullable) = false, (gogoproto.stdtime) = true];
   string                    chain_id  = 6 [(gogoproto.customname) = "ChainID"];
 
-  bytes                     data      = 7;  // [peppermint] tx hash
-  repeated SideTxResult     side_tx_results = 8; // [peppermint] side tx results
+  repeated SideTxResult side_tx_results = 7;  // [peppermint] side tx results
 }

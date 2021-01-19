@@ -442,11 +442,11 @@ func checkProposalsOnlyDifferByTimestamp(lastSignBytes, newSignBytes []byte) (ti
 //
 
 // SignSideTxResult signs given data bytes
-func (pv *FilePV) SignSideTxResult(sideTxResult *types.SideTxResultWithData) error {
-	sig, err := pv.Key.PrivKey.Sign(sideTxResult.GetBytes())
+func (pv *FilePV) SignSideTxResult(sideTxResult *tmproto.SideTxResultWithData) error {
+	sig, err := pv.Key.PrivKey.Sign(types.SignTxResultBytes(sideTxResult))
 	if err != nil {
 		return err
 	}
-	sideTxResult.Sig = sig
+	sideTxResult.Result.Sig = sig
 	return nil
 }

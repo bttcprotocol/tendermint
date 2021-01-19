@@ -284,14 +284,14 @@ func execBlockOnProxyApp(
 	store Store,
 	initialHeight int64,
 	executeSideDeliverTx bool,
-) (*tmstate.ABCIResponses, []*types.SideTxResultWithData, error) {
+) (*tmstate.ABCIResponses, []tmproto.SideTxResultWithData, error) {
 	var validTxs, invalidTxs = 0, 0
 
 	txIndex := 0
 	abciResponses := new(tmstate.ABCIResponses)
 	dtxs := make([]*abci.ResponseDeliverTx, len(block.Txs))
 	abciResponses.DeliverTxs = dtxs
-	sideTxResponses := make([]*types.SideTxResultWithData, 0)
+	sideTxResponses := make([]tmproto.SideTxResultWithData, 0)
 
 	// Execute transactions and get hash.
 	proxyCb := func(req *abci.Request, res *abci.Response) {
@@ -386,10 +386,10 @@ func execBlockOnProxyApp(
 					if txRes.Code == abci.CodeTypeOK && txRes.Result != tmproto.SideTxResultType_SKIP {
 						tx := types.Tx(txReq.Tx)
 						// add into side tx responses
-						sideTxResponses = append(sideTxResponses, &types.SideTxResultWithData{
-							SideTxResult: types.SideTxResult{
+						sideTxResponses = append(sideTxResponses, tmproto.SideTxResultWithData{
+							Result: &tmproto.SideTxResult{
 								TxHash: tx.Hash(),
-								Result: int32(txRes.Result),
+								Result: txRes.Result,
 							},
 							Data: txRes.Data,
 						})
@@ -651,7 +651,7 @@ func ExecCommitBlock(
 // Side channel utils
 //
 
-func getBeginSideBlockData(block *types.Block, store Store) []tmproto.SideTxResult {
+func getBeginSideBlockData(block *types.Block, store Store) []tmproto.SideTxResponses {
 	// returns [
 	//   {
 	//     txHash: txHash,
@@ -667,11 +667,11 @@ func getBeginSideBlockData(block *types.Block, store Store) []tmproto.SideTxResu
 	// ]
 
 	// prepare result
-	result := make([]tmproto.SideTxResult, 0)
+	result := make([]tmproto.SideTxResponses, 0)
 
 	// return if prev block is empty result (mostly block 0)
 	if block == nil || block.Height <= 2 {
-		return make([]tmproto.SideTxResult, 0)
+		return make([]tmproto.SideTxResponses, 0)
 	}
 
 	// iterate all votes
@@ -690,9 +690,9 @@ func getBeginSideBlockData(block *types.Block, store Store) []tmproto.SideTxResu
 
 			// create tx-hash based object, if not found yet
 			if resultIndex == -1 {
-				result = append(result, tmproto.SideTxResult{
+				result = append(result, tmproto.SideTxResponses{
 					TxHash: sideTxResult.TxHash,
-					Sigs:   make([]tmproto.SideTxSig, 0),
+					Sigs:   make([]tmproto.SideTxResponse, 0),
 				})
 				// set new result index
 				resultIndex = len(result) - 1
@@ -701,7 +701,7 @@ func getBeginSideBlockData(block *types.Block, store Store) []tmproto.SideTxResu
 			// if tx is not processed for current vote, add it into sigs for particular side-tx result
 			if _, ok := txMapping[resultIndex]; !ok {
 				// get result object from result index
-				result[resultIndex].Sigs = append(result[resultIndex].Sigs, tmproto.SideTxSig{
+				result[resultIndex].Sigs = append(result[resultIndex].Sigs, tmproto.SideTxResponse{
 					Result:  tmproto.SideTxResultType(sideTxResult.Result),
 					Sig:     sideTxResult.Sig,
 					Address: vote.ValidatorAddress,

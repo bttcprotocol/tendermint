@@ -58,7 +58,7 @@ type Vote struct {
 	ValidatorIndex   int32                 `json:"validator_index"`
 	Signature        []byte                `json:"signature"`
 
-	SideTxResults []SideTxResult `json:"side_tx_results"` // side-tx result [peppermint]
+	SideTxResults []*tmproto.SideTxResult `json:"side_tx_results"` // side-tx result [peppermint]
 }
 
 // CommitSig converts the Vote to a CommitSig.
@@ -214,7 +214,7 @@ func (vote *Vote) ValidateBasic() error {
 				return fmt.Errorf("side-tx signature is invalid. Sig length: %v", len(s.Sig))
 			}
 
-			if _, ok := tmproto.SideTxResultType_name[s.Result]; !ok {
+			if _, ok := tmproto.SideTxResultType_value[s.Result.String()]; !ok {
 				return fmt.Errorf("invalid side-tx result. Result: %v", s.Result)
 			}
 
@@ -248,6 +248,7 @@ func (vote *Vote) ToProto() *tmproto.Vote {
 		ValidatorAddress: vote.ValidatorAddress,
 		ValidatorIndex:   vote.ValidatorIndex,
 		Signature:        vote.Signature,
+		SideTxResults:    vote.SideTxResults,
 	}
 }
 

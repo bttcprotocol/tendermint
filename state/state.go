@@ -80,7 +80,7 @@ type State struct {
 	AppHash []byte
 
 	// [peppermint] side tx responses
-	SideTxResponses []*types.SideTxResultWithData
+	SideTxResponses []tmproto.SideTxResultWithData
 }
 
 // Copy makes a copy of the State for mutating.

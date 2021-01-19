@@ -103,15 +103,15 @@ message Vote {
   int32 validator_index   = 7;
   bytes signature         = 8;
 
-    repeated SideTxResult     side_tx_results = 9; // [peppermint] side tx results
+  repeated SideTxResult side_tx_results = 9;  // [peppermint] side tx results
 }
 
 // Commit contains the evidence that a block was committed by a set of validators.
 message Commit {
-  int64                         height     = 1;
-  int32                         round      = 2;
-  BlockID                       block_id   = 3 [(gogoproto.nullable) = false, (gogoproto.customname) = "BlockID"];
-  repeated CommitSig            signatures = 4 [(gogoproto.nullable) = false];
+  int64              height     = 1;
+  int32              round      = 2;
+  BlockID            block_id   = 3 [(gogoproto.nullable) = false, (gogoproto.customname) = "BlockID"];
+  repeated CommitSig signatures = 4 [(gogoproto.nullable) = false];
 }
 
 // CommitSig is a part of the Vote included in a Commit.
@@ -158,33 +158,42 @@ message TxProof {
   tendermint.crypto.Proof proof     = 3;
 }
 
-// Side tx results
-message SideTxResult {
-  bytes tx_hash = 1;
-  repeated SideTxSig sigs = 2 [(gogoproto.nullable)=false];
-}
+//
+// Side channel related messages
+//
 
-
-// Side-tx sig
-message SideTxSig {
-  SideTxResultType result = 1;
-  bytes sig = 2;
-  bytes address = 3;
-}
-
-
-// Side-tx result type
+// Side-tx response type
 enum SideTxResultType {
   SKIP = 0;
-  YES = 1;
-  NO = 2;
+  YES  = 1;
+  NO   = 2;
+}
+
+// Side tx responses
+message SideTxResult {
+  SideTxResultType result  = 1;
+  bytes            sig     = 2;
+  bytes            tx_hash = 3;
 }
 
 // SideTxResultWithData side tx result with data for vote
 message SideTxResultWithData {
-
-  bytes tx_hash = 1;
-  repeated SideTxSig sigs = 2 [(gogoproto.nullable)=false];
-    bytes data = 3;
+  SideTxResult result = 1;
+  bytes        data   = 2;
 }
 
+// For ABCI
+//
+
+// Side-tx sig response
+message SideTxResponse {
+  SideTxResultType result  = 1;
+  bytes            sig     = 2;
+  bytes            address = 3;
+}
+
+// Side tx responses for ABCI
+message SideTxResponses {
+  bytes                   tx_hash = 1;
+  repeated SideTxResponse sigs    = 2 [(gogoproto.nullable) = false];
+}

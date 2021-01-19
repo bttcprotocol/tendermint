@@ -96,7 +96,7 @@ func (sc *RetrySignerClient) SignProposal(chainID string, proposal *tmproto.Prop
 }
 
 // SignSideTxResult signs given data bytes
-func (sc *RetrySignerClient) SignSideTxResult(sideTxResult *types.SideTxResultWithData) error {
+func (sc *RetrySignerClient) SignSideTxResult(sideTxResult *tmproto.SideTxResultWithData) error {
 	var err error
 	for i := 0; i < sc.retries || sc.retries == 0; i++ {
 		err = sc.next.SignSideTxResult(sideTxResult)
