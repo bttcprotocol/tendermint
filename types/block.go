@@ -606,7 +606,7 @@ type CommitSig struct {
 	Timestamp        time.Time   `json:"timestamp"`
 	Signature        []byte      `json:"signature"`
 
-	SideTxResults []SideTxResult `json:"side_tx_results"` // side-tx result [peppermint]
+	SideTxResults []*tmproto.SideTxResult `json:"side_tx_results"` // side-tx result [peppermint]
 }
 
 // NewCommitSigForBlock returns new CommitSig with BlockIDFlagCommit.
@@ -725,6 +725,7 @@ func (cs *CommitSig) ToProto() *tmproto.CommitSig {
 		ValidatorAddress: cs.ValidatorAddress,
 		Timestamp:        cs.Timestamp,
 		Signature:        cs.Signature,
+		SideTxResults:    cs.SideTxResults,
 	}
 }
 
@@ -736,6 +737,7 @@ func (cs *CommitSig) FromProto(csp tmproto.CommitSig) error {
 	cs.ValidatorAddress = csp.ValidatorAddress
 	cs.Timestamp = csp.Timestamp
 	cs.Signature = csp.Signature
+	cs.SideTxResults = csp.SideTxResults
 
 	return cs.ValidateBasic()
 }

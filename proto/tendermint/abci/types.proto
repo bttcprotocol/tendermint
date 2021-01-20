@@ -38,7 +38,7 @@ message Request {
     RequestApplySnapshotChunk apply_snapshot_chunk = 15;
 
     RequestBeginSideBlock begin_side_block = 31;
-    RequestDeliverSideTx deliver_side_tx = 32;
+    RequestDeliverSideTx  deliver_side_tx  = 32;
   }
 }
 
@@ -151,7 +151,7 @@ message Response {
     ResponseApplySnapshotChunk apply_snapshot_chunk = 16;
 
     ResponseBeginSideBlock begin_side_block = 31;
-    ResponseDeliverSideTx deliver_side_tx = 32;
+    ResponseDeliverSideTx  deliver_side_tx  = 32;
   }
 }
 
@@ -419,33 +419,31 @@ service ABCIApplication {
 // Side channel related entities
 //
 
-
 //
 // Side channel requests
 //
 
 message RequestBeginSideBlock {
-  bytes hash = 1;
-  tendermint.types.Header header = 2 [(gogoproto.nullable) = false];  
-  repeated tendermint.types.SideTxResult side_tx_results = 3 [(gogoproto.nullable)=false];
+  bytes                   hash                              = 1;
+  tendermint.types.Header header                            = 2 [(gogoproto.nullable) = false];
+  repeated tendermint.types.SideTxResponses side_tx_results = 3 [(gogoproto.nullable) = false];
 }
 
 message RequestDeliverSideTx {
   bytes tx = 1;
 }
 
-
 //
 // Side channel response
 //
 
 message ResponseBeginSideBlock {
-  repeated Event events = 1 [(gogoproto.nullable)=false, (gogoproto.jsontag)="events,omitempty"];
+  repeated Event events = 1 [(gogoproto.nullable) = false, (gogoproto.jsontag) = "events,omitempty"];
 }
 
 message ResponseDeliverSideTx {
-  uint32 code = 1;
-  string codespace = 2;
-  tendermint.types.SideTxResultType result = 4;
-  bytes data = 3;
+  uint32                            code      = 1;
+  string                            codespace = 2;
+  tendermint.types.SideTxResultType result    = 4;
+  bytes                             data      = 3;
 }
