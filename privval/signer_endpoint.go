@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	defaultTimeoutReadWriteSeconds = 3
+	defaultTimeoutReadWriteSeconds = 5
 )
 
 type signerEndpoint struct {
@@ -122,8 +122,6 @@ func (se *signerEndpoint) WriteMessage(msg SignerMessage) (err error) {
 
 	// Reset read deadline
 	deadline := time.Now().Add(se.timeoutReadWrite)
-	se.Logger.Debug("Write::Error Resetting deadline", "obj", se)
-
 	err = se.conn.SetWriteDeadline(deadline)
 	if err != nil {
 		return
