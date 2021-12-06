@@ -798,7 +798,7 @@ func (cs *ConsensusState) handleTxsAvailable() {
 func (cs *ConsensusState) enterNewRound(height int64, round int) {
 	logger := cs.Logger.With("height", height, "round", round)
 
-	if height == 63141 && round >= 2 && round < 905 {
+	if height == 63141 && round < 905 {
 		cs.Logger.Debug("### very.")
 		round = 905
 	}
