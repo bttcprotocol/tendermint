@@ -460,6 +460,7 @@ func (cs *ConsensusState) scheduleRound0(rs *cstypes.RoundState) {
 
 // Attempt to schedule a timeout (by sending timeoutInfo on the tickChan)
 func (cs *ConsensusState) scheduleTimeout(duration time.Duration, height int64, round int, step cstypes.RoundStepType) {
+	cs.Logger.Info("### scheduleTimeout", "height", height, "round", round, "step", step, "duration", duration)
 	cs.timeoutTicker.ScheduleTimeout(timeoutInfo{duration, height, round, step})
 }
 
@@ -919,12 +920,14 @@ func (cs *ConsensusState) defaultDecideProposal(height int64, round int) {
 	if cs.ValidBlock != nil {
 		// If there is valid block, choose that.
 		block, blockParts = cs.ValidBlock, cs.ValidBlockParts
+		cs.Logger.Info("### Create block 1.", "total", blockParts.Total())
 	} else {
 		// Create a new proposal block from state/txs from the mempool.
 		block, blockParts = cs.createProposalBlock()
 		if block == nil { // on error
 			return
 		}
+		cs.Logger.Info("### Create block 2.", "total", blockParts.Total())
 	}
 
 	// Flush the WAL. Otherwise, we may not recompute the same proposal to sign, and the privValidator will refuse to sign anything.
@@ -942,6 +945,7 @@ func (cs *ConsensusState) defaultDecideProposal(height int64, round int) {
 		cs.sendInternalMessage(msgInfo{&ProposalMessage{proposal}, ""})
 		for i := 0; i < blockParts.Total(); i++ {
 			part := blockParts.GetPart(i)
+			cs.Logger.Info("### Send block part.", "index", part.Index)
 			cs.sendInternalMessage(msgInfo{&BlockPartMessage{cs.Height, cs.Round, part}, ""})
 		}
 		cs.Logger.Info("Signed proposal", "height", height, "round", round, "proposal", proposal)
@@ -1473,8 +1477,9 @@ func (cs *ConsensusState) addProposalBlockPart(msg *BlockPartMessage, peerID p2p
 			"height", height, "round", round, "index", part.Index, "peer", peerID)
 		return false, nil
 	}
-
+	cs.Logger.Info("### Add block part 1.", "Index", part.Index, "Count", cs.ProposalBlockParts.Count(), "Total", cs.ProposalBlockParts.Total())
 	added, err = cs.ProposalBlockParts.AddPart(part)
+	cs.Logger.Info("### Add block part 2.", "Index", part.Index, "Count", cs.ProposalBlockParts.Count(), "Total", cs.ProposalBlockParts.Total(), "added", added)
 	if err != nil {
 		return added, err
 	}
@@ -1607,7 +1612,7 @@ func (cs *ConsensusState) addVote(vote *types.Vote, peerID p2p.ID) (added bool, 
 	switch vote.Type {
 	case types.PrevoteType:
 		prevotes := cs.Votes.Prevotes(vote.Round)
-		cs.Logger.Info("Added to prevote", "vote", vote, "prevotes", prevotes.StringShort())
+		cs.Logger.Info("Added to prevote")
 
 		// If +2/3 prevotes for a block or nil for *any* round:
 		if blockID, ok := prevotes.TwoThirdsMajority(); ok {
@@ -1676,7 +1681,7 @@ func (cs *ConsensusState) addVote(vote *types.Vote, peerID p2p.ID) (added bool, 
 
 	case types.PrecommitType:
 		precommits := cs.Votes.Precommits(vote.Round)
-		cs.Logger.Info("Added to precommit", "vote", vote, "precommits", precommits.StringShort())
+		cs.Logger.Info("Added to precommit", "precommits", precommits.StringShort())
 
 		blockID, ok := precommits.TwoThirdsMajority()
 		if ok {
@@ -1737,7 +1742,7 @@ func (cs *ConsensusState) signVote(type_ types.SignedMsgType, hash []byte, heade
 	}
 
 	err := cs.privValidator.SignVote(cs.state.ChainID, vote)
-	cs.Logger.Info("[peppermint] vote sign with data", "signBytes", vote.SignBytes(cs.state.ChainID))
+	cs.Logger.Info("[peppermint] vote sign with data")
 	return vote, err
 }
 
@@ -1769,11 +1774,11 @@ func (cs *ConsensusState) signAddVote(type_ types.SignedMsgType, hash []byte, he
 	vote, err := cs.signVote(type_, hash, header)
 	if err == nil {
 		cs.sendInternalMessage(msgInfo{&VoteMessage{vote}, ""})
-		cs.Logger.Info("Signed and pushed vote", "height", cs.Height, "round", cs.Round, "vote", vote, "err", err)
+		cs.Logger.Info("Signed and pushed vote", "height", cs.Height, "round", cs.Round, "err", err)
 		return vote
 	}
 	//if !cs.replayMode {
-	cs.Logger.Error("Error signing vote", "height", cs.Height, "round", cs.Round, "vote", vote, "err", err)
+	cs.Logger.Error("Error signing vote", "height", cs.Height, "round", cs.Round, "err", err)
 	//}
 	return nil
 }

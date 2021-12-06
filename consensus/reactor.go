@@ -1025,7 +1025,7 @@ func (ps *PeerState) SetHasProposalBlockPart(height int64, round int, index int)
 func (ps *PeerState) PickSendVote(votes types.VoteSetReader) bool {
 	if vote, ok := ps.PickVoteToSend(votes); ok {
 		msg := &VoteMessage{vote}
-		ps.logger.Debug("Sending vote message", "ps", ps, "vote", vote)
+		ps.logger.Debug("Sending vote message")
 		if ps.peer.Send(VoteChannel, cdc.MustMarshalBinaryBare(msg)) {
 			ps.SetHasVote(vote)
 			return true
@@ -1563,7 +1563,7 @@ func (m *VoteMessage) ValidateBasic() error {
 
 // String returns a string representation.
 func (m *VoteMessage) String() string {
-	return fmt.Sprintf("[Vote %v]", m.Vote)
+	return fmt.Sprintf("###[Vote blockId=%v H=%v R=%v type=%v]", m.Vote.BlockID, m.Vote.Height, m.Vote.Round, m.Vote.Type)
 }
 
 //-------------------------------------

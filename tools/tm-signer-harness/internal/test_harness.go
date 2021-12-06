@@ -267,7 +267,7 @@ func (th *TestHarness) TestSignVote() error {
 			th.logger.Error("FAILED: Signing of vote", "err", err)
 			return newTestHarnessError(ErrTestSignVoteFailed, err, fmt.Sprintf("voteType=%d", voteType))
 		}
-		th.logger.Debug("Signed vote", "vote", vote)
+		th.logger.Debug("Signed vote")
 		// validate the contents of the vote
 		if err := vote.ValidateBasic(); err != nil {
 			th.logger.Error("FAILED: Signed vote is invalid", "err", err)
