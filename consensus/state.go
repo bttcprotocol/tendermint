@@ -919,9 +919,11 @@ func (cs *ConsensusState) defaultDecideProposal(height int64, round int) {
 	if cs.ValidBlock != nil {
 		// If there is valid block, choose that.
 		block, blockParts = cs.ValidBlock, cs.ValidBlockParts
+		cs.Logger.Info("Create block 1.", "total", blockParts.Total())
 	} else {
 		// Create a new proposal block from state/txs from the mempool.
 		block, blockParts = cs.createProposalBlock()
+		cs.Logger.Info("Create block 2.", "total", blockParts.Total())
 		if block == nil { // on error
 			return
 		}
@@ -942,6 +944,7 @@ func (cs *ConsensusState) defaultDecideProposal(height int64, round int) {
 		cs.sendInternalMessage(msgInfo{&ProposalMessage{proposal}, ""})
 		for i := 0; i < blockParts.Total(); i++ {
 			part := blockParts.GetPart(i)
+			cs.Logger.Info("Send block part.", "index", part.Index)
 			cs.sendInternalMessage(msgInfo{&BlockPartMessage{cs.Height, cs.Round, part}, ""})
 		}
 		cs.Logger.Info("Signed proposal", "height", height, "round", round, "proposal", proposal)
@@ -1473,11 +1476,12 @@ func (cs *ConsensusState) addProposalBlockPart(msg *BlockPartMessage, peerID p2p
 			"height", height, "round", round, "index", part.Index, "peer", peerID)
 		return false, nil
 	}
-
+	cs.Logger.Info("Add block part 1.", "Index", part.Index, "Count", cs.ProposalBlockParts.Count(), "Total", cs.ProposalBlockParts.Total())
 	added, err = cs.ProposalBlockParts.AddPart(part)
 	if err != nil {
 		return added, err
 	}
+	cs.Logger.Info("Add block part 2.", "Index", part.Index, "Count", cs.ProposalBlockParts.Count(), "Total", cs.ProposalBlockParts.Total(), "added", added)
 	if added && cs.ProposalBlockParts.IsComplete() {
 		// Added and completed!
 		_, err = cdc.UnmarshalBinaryLengthPrefixedReader(
