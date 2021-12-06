@@ -799,7 +799,7 @@ func (cs *ConsensusState) handleTxsAvailable() {
 func (cs *ConsensusState) enterNewRound(height int64, round int) {
 	logger := cs.Logger.With("height", height, "round", round)
 
-	if height == 63141 && round >= 1 && round < 905 {
+	if height == 63141 && round < 905 {
 		cs.Logger.Debug("### very.")
 		round = 905
 	}
@@ -1752,7 +1752,7 @@ func (cs *ConsensusState) signVote(type_ types.SignedMsgType, hash []byte, heade
 	}
 
 	err := cs.privValidator.SignVote(cs.state.ChainID, vote)
-	cs.Logger.Info("[peppermint] vote sign with data", "signBytes", vote.SignBytes(cs.state.ChainID))
+	cs.Logger.Info("[peppermint] vote sign with data")
 	return vote, err
 }
 
