@@ -1563,7 +1563,7 @@ func (m *VoteMessage) ValidateBasic() error {
 
 // String returns a string representation.
 func (m *VoteMessage) String() string {
-	return fmt.Sprintf("[Vote %v]", m.Vote)
+	return fmt.Sprintf("[Vote %v %v %v %v]", m.Vote.BlockID, m.Vote.Height, m.Vote.Round, m.Vote.Type)
 }
 
 //-------------------------------------

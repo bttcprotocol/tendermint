@@ -305,30 +305,30 @@ func (cs *ConsensusState) OnStart() error {
 
 	// we may have lost some votes if the process crashed
 	// reload from consensus log to catchup
-	if cs.doWALCatchup {
-		if err := cs.catchupReplay(cs.Height); err != nil {
-			// don't try to recover from data corruption error
-			if IsDataCorruptionError(err) {
-				cs.Logger.Error("Encountered corrupt WAL file", "err", err.Error())
-				cs.Logger.Error("Please repair the WAL file before restarting")
-				fmt.Println(`You can attempt to repair the WAL as follows:
-
-----
-WALFILE=~/.tendermint/data/cs.wal/wal
-cp $WALFILE ${WALFILE}.bak # backup the file
-go run scripts/wal2json/main.go $WALFILE > wal.json # this will panic, but can be ignored
-rm $WALFILE # remove the corrupt file
-go run scripts/json2wal/main.go wal.json $WALFILE # rebuild the file without corruption
-----`)
-
-				return err
-			}
-
-			cs.Logger.Error("Error on catchup replay. Proceeding to start ConsensusState anyway", "err", err.Error())
-			// NOTE: if we ever do return an error here,
-			// make sure to stop the timeoutTicker
-		}
-	}
+//	if cs.doWALCatchup {
+//		if err := cs.catchupReplay(cs.Height); err != nil {
+//			// don't try to recover from data corruption error
+//			if IsDataCorruptionError(err) {
+//				cs.Logger.Error("Encountered corrupt WAL file", "err", err.Error())
+//				cs.Logger.Error("Please repair the WAL file before restarting")
+//				fmt.Println(`You can attempt to repair the WAL as follows:
+//
+//----
+//WALFILE=~/.tendermint/data/cs.wal/wal
+//cp $WALFILE ${WALFILE}.bak # backup the file
+//go run scripts/wal2json/main.go $WALFILE > wal.json # this will panic, but can be ignored
+//rm $WALFILE # remove the corrupt file
+//go run scripts/json2wal/main.go wal.json $WALFILE # rebuild the file without corruption
+//----`)
+//
+//				return err
+//			}
+//
+//			cs.Logger.Error("Error on catchup replay. Proceeding to start ConsensusState anyway", "err", err.Error())
+//			// NOTE: if we ever do return an error here,
+//			// make sure to stop the timeoutTicker
+//		}
+//	}
 
 	// now start the receiveRoutine
 	go cs.receiveRoutine(0)
