@@ -796,21 +796,21 @@ func (cfg *ConsensusConfig) WaitForTxs() bool {
 // Propose returns the amount of time to wait for a proposal
 func (cfg *ConsensusConfig) Propose(round int) time.Duration {
 	return time.Duration(
-		cfg.TimeoutPropose.Nanoseconds()+cfg.TimeoutProposeDelta.Nanoseconds()*int64(round),
+		cfg.TimeoutPropose.Nanoseconds()+cfg.TimeoutProposeDelta.Nanoseconds()*int64(1),
 	) * time.Nanosecond
 }
 
 // Prevote returns the amount of time to wait for straggler votes after receiving any +2/3 prevotes
 func (cfg *ConsensusConfig) Prevote(round int) time.Duration {
 	return time.Duration(
-		cfg.TimeoutPrevote.Nanoseconds()+cfg.TimeoutPrevoteDelta.Nanoseconds()*int64(round),
+		cfg.TimeoutPrevote.Nanoseconds()+cfg.TimeoutPrevoteDelta.Nanoseconds()*int64(1),
 	) * time.Nanosecond
 }
 
 // Precommit returns the amount of time to wait for straggler votes after receiving any +2/3 precommits
 func (cfg *ConsensusConfig) Precommit(round int) time.Duration {
 	return time.Duration(
-		cfg.TimeoutPrecommit.Nanoseconds()+cfg.TimeoutPrecommitDelta.Nanoseconds()*int64(round),
+		cfg.TimeoutPrecommit.Nanoseconds()+cfg.TimeoutPrecommitDelta.Nanoseconds()*int64(1),
 	) * time.Nanosecond
 }
 
