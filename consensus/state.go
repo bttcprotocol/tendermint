@@ -1282,7 +1282,7 @@ func (cs *ConsensusState) tryFinalizeCommit(height int64) {
 	//	go
 	cs.finalizeCommit(height)
 	endTime := time.Now().UnixNano() / 1000000
-	logger.Info("@@@ finalizeCommit block.", "cost", endTime - startTime, "H", height)
+	logger.Info("@@@ finalizeCommit block.", "cost", endTime - startTime)
 }
 
 // Increment height and goto cstypes.RoundStepNewHeight
@@ -1361,7 +1361,7 @@ func (cs *ConsensusState) finalizeCommit(height int64) {
 	startTime2 := time.Now().UnixNano() / 1000000
 	stateCopy, err = cs.blockExec.ApplyBlock(stateCopy, types.BlockID{Hash: block.Hash(), PartsHeader: blockParts.Header()}, block)
 	endTime2 := time.Now().UnixNano() / 1000000
-	cs.Logger.Info("@@@ ApplyBlock", "cost", endTime2 - startTime2, "height", height, "NumTxs", block.NumTxs, "TotalTxs", block.TotalTxs)
+	cs.Logger.Info("@@@ ApplyBlock", "height", height, "NumTxs", "cost", endTime2 - startTime2)
 	if err != nil {
 		cs.Logger.Error("Error on ApplyBlock. Did the application crash? Please restart tendermint", "err", err)
 		err := cmn.Kill()
@@ -1499,7 +1499,7 @@ func (cs *ConsensusState) addProposalBlockPart(msg *BlockPartMessage, peerID p2p
 			cs.state.ConsensusParams.Block.MaxBytes,
 		)
 		if err != nil {
-			cs.Logger.Error("### Generate block failed.", "H", cs.ProposalBlock.Height, "hash", cs.ProposalBlock.Hash(), "maxByte", cs.state.ConsensusParams.Block.MaxBytes, "err", err)
+			cs.Logger.Error("### Generate block failed.", "H", cs.Height, "maxByte", cs.state.ConsensusParams.Block.MaxBytes, "err", err)
 			return added, err
 		}
 		// NOTE: it's possible to receive complete proposal blocks for future rounds without having the proposal
@@ -1733,13 +1733,15 @@ func (cs *ConsensusState) signVote(type_ types.SignedMsgType, hash []byte, heade
 		Type:             type_,
 		BlockID:          types.BlockID{Hash: hash, PartsHeader: header},
 	}
-
+	startTime := time.Now().UnixNano() / 1000000
+	num := 0
 	if len(cs.state.SideTxResponses) > 0 {
 		cs.Logger.Debug("[peppermint] Setting side tx results to vote")
 		sideTxResults := make([]types.SideTxResult, 0)
 		for _, sideTxResponse := range cs.state.SideTxResponses {
 			// sign if data is available on side tx response
 			if len(sideTxResponse.Data) > 0 {
+				num++
 				err := cs.privValidator.SignSideTxResult(sideTxResponse)
 				if err != nil {
 					return nil, err
@@ -1749,9 +1751,9 @@ func (cs *ConsensusState) signVote(type_ types.SignedMsgType, hash []byte, heade
 		}
 		vote.SideTxResults = sideTxResults
 	}
-
+	endTime := time.Now().UnixNano() / 1000000
 	err := cs.privValidator.SignVote(cs.state.ChainID, vote)
-	cs.Logger.Info("[peppermint] vote sign with data")
+	cs.Logger.Info("@@@ signVote", "height", cs.Height, "cost", endTime - startTime)
 	return vote, err
 }
 
