@@ -937,8 +937,8 @@ func (cs *ConsensusState) defaultDecideProposal(height int64, round int) {
 	propBlockId := types.BlockID{Hash: block.Hash(), PartsHeader: blockParts.Header()}
 	proposal := types.NewProposal(height, round, cs.ValidRound, propBlockId)
 	proposal.Data = block.DataHash // [peppermint] add data hash to proposal
-	d := proposal.SignBytes(cs.state.ChainID)
-	cs.Logger.Info("[peppermint] New proposal", "signBytes", d)
+	proposal.SignBytes(cs.state.ChainID)
+	cs.Logger.Info("[peppermint] New proposal")
 	if err := cs.privValidator.SignProposal(cs.state.ChainID, proposal); err == nil {
 
 		// send proposal and block parts on internal msg queue
@@ -1278,9 +1278,11 @@ func (cs *ConsensusState) tryFinalizeCommit(height int64) {
 		logger.Info("Attempt to finalize failed. We don't have the commit block.", "proposal-block", cs.ProposalBlock.Hash(), "commit-block", blockID.Hash)
 		return
 	}
-
+	startTime := time.Now().UnixNano() / 1000000
 	//	go
 	cs.finalizeCommit(height)
+	endTime := time.Now().UnixNano() / 1000000
+	logger.Info("@@@ finalizeCommit block.", "cost", endTime - startTime, "H", height)
 }
 
 // Increment height and goto cstypes.RoundStepNewHeight
@@ -1302,9 +1304,13 @@ func (cs *ConsensusState) finalizeCommit(height int64) {
 	if !block.HashesTo(blockID.Hash) {
 		panic(fmt.Sprintf("Cannot finalizeCommit, ProposalBlock does not hash to commit hash"))
 	}
+
+	startTime1 := time.Now().UnixNano() / 1000000
 	if err := cs.blockExec.ValidateBlock(cs.state, block); err != nil {
 		panic(fmt.Sprintf("+2/3 committed an invalid block: %v", err))
 	}
+	endTime1 := time.Now().UnixNano() / 1000000
+	cs.Logger.Info("@@@ ValidateBlock", "cost", endTime1 - startTime1)
 
 	cs.Logger.Info(fmt.Sprintf("Finalizing commit of block with %d txs", block.NumTxs),
 		"height", block.Height, "hash", block.Hash(), "root", block.AppHash)
@@ -1352,7 +1358,10 @@ func (cs *ConsensusState) finalizeCommit(height int64) {
 	// Execute and commit the block, update and save the state, and update the mempool.
 	// NOTE The block.AppHash wont reflect these txs until the next block.
 	var err error
+	startTime2 := time.Now().UnixNano() / 1000000
 	stateCopy, err = cs.blockExec.ApplyBlock(stateCopy, types.BlockID{Hash: block.Hash(), PartsHeader: blockParts.Header()}, block)
+	endTime2 := time.Now().UnixNano() / 1000000
+	cs.Logger.Info("@@@ ApplyBlock", "cost", endTime2 - startTime2, "height", height, "NumTxs", block.NumTxs, "TotalTxs", block.TotalTxs)
 	if err != nil {
 		cs.Logger.Error("Error on ApplyBlock. Did the application crash? Please restart tendermint", "err", err)
 		err := cmn.Kill()
@@ -1477,9 +1486,8 @@ func (cs *ConsensusState) addProposalBlockPart(msg *BlockPartMessage, peerID p2p
 			"height", height, "round", round, "index", part.Index, "peer", peerID)
 		return false, nil
 	}
-	cs.Logger.Info("### Add block part 1.", "Index", part.Index, "Count", cs.ProposalBlockParts.Count(), "Total", cs.ProposalBlockParts.Total())
 	added, err = cs.ProposalBlockParts.AddPart(part)
-	cs.Logger.Info("### Add block part 2.", "Index", part.Index, "Count", cs.ProposalBlockParts.Count(), "Total", cs.ProposalBlockParts.Total(), "added", added)
+	cs.Logger.Info("### Add block part.", "Index", part.Index, "Count", cs.ProposalBlockParts.Count(), "Total", cs.ProposalBlockParts.Total(), "added", added)
 	if err != nil {
 		return added, err
 	}
@@ -1491,6 +1499,7 @@ func (cs *ConsensusState) addProposalBlockPart(msg *BlockPartMessage, peerID p2p
 			cs.state.ConsensusParams.Block.MaxBytes,
 		)
 		if err != nil {
+			cs.Logger.Error("### Generate block failed.", "H", cs.ProposalBlock.Height, "hash", cs.ProposalBlock.Hash(), "maxByte", cs.state.ConsensusParams.Block.MaxBytes, "err", err)
 			return added, err
 		}
 		// NOTE: it's possible to receive complete proposal blocks for future rounds without having the proposal
