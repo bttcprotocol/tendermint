@@ -3,17 +3,15 @@ package consensus
 import (
 	"bytes"
 	"fmt"
-	"reflect"
-	"runtime/debug"
-	"sync"
-	"time"
-
 	"github.com/pkg/errors"
-
 	cmn "github.com/tendermint/tendermint/libs/common"
 	"github.com/tendermint/tendermint/libs/fail"
 	"github.com/tendermint/tendermint/libs/log"
 	tmtime "github.com/tendermint/tendermint/types/time"
+	"reflect"
+	"runtime/debug"
+	"sync"
+	"time"
 
 	cfg "github.com/tendermint/tendermint/config"
 	cstypes "github.com/tendermint/tendermint/consensus/types"
@@ -993,6 +991,7 @@ func (cs *ConsensusState) createProposalBlock() (block *types.Block, blockParts 
 	}
 
 	proposerAddr := cs.privValidator.GetPubKey().Address()
+	//sizeof := unsafe.Sizeof(cs.state.SideTxResponses)
 	return cs.blockExec.CreateProposalBlock(cs.Height, cs.state, commit, proposerAddr)
 }
 
