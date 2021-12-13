@@ -918,14 +918,13 @@ func (cs *ConsensusState) defaultDecideProposal(height int64, round int) {
 	if cs.ValidBlock != nil {
 		// If there is valid block, choose that.
 		block, blockParts = cs.ValidBlock, cs.ValidBlockParts
-		cs.Logger.Info("### Create block 1.", "total", blockParts.Total())
 	} else {
 		// Create a new proposal block from state/txs from the mempool.
 		block, blockParts = cs.createProposalBlock()
 		if block == nil { // on error
 			return
 		}
-		cs.Logger.Info("### Create block 2.", "total", blockParts.Total())
+		cs.Logger.Info("### Create block.", "total", blockParts.Total())
 	}
 
 	// Flush the WAL. Otherwise, we may not recompute the same proposal to sign, and the privValidator will refuse to sign anything.
@@ -936,14 +935,12 @@ func (cs *ConsensusState) defaultDecideProposal(height int64, round int) {
 	proposal := types.NewProposal(height, round, cs.ValidRound, propBlockId)
 	proposal.Data = block.DataHash // [peppermint] add data hash to proposal
 	proposal.SignBytes(cs.state.ChainID)
-	cs.Logger.Info("[peppermint] New proposal")
 	if err := cs.privValidator.SignProposal(cs.state.ChainID, proposal); err == nil {
 
 		// send proposal and block parts on internal msg queue
 		cs.sendInternalMessage(msgInfo{&ProposalMessage{proposal}, ""})
 		for i := 0; i < blockParts.Total(); i++ {
 			part := blockParts.GetPart(i)
-			cs.Logger.Info("### Send block part.", "index", part.Index)
 			cs.sendInternalMessage(msgInfo{&BlockPartMessage{cs.Height, cs.Round, part}, ""})
 		}
 		cs.Logger.Info("Signed proposal", "height", height, "round", round, "proposal", proposal)
@@ -1360,7 +1357,7 @@ func (cs *ConsensusState) finalizeCommit(height int64) {
 	startTime2 := time.Now().UnixNano() / 1000000
 	stateCopy, err = cs.blockExec.ApplyBlock(stateCopy, types.BlockID{Hash: block.Hash(), PartsHeader: blockParts.Header()}, block)
 	endTime2 := time.Now().UnixNano() / 1000000
-	cs.Logger.Info("@@@ ApplyBlock", "height", height, "NumTxs", "cost", endTime2 - startTime2)
+	cs.Logger.Info("@@@ ApplyBlock", "height", height, "NumTxs", block.NumTxs, "cost", endTime2 - startTime2)
 	if err != nil {
 		cs.Logger.Error("Error on ApplyBlock. Did the application crash? Please restart tendermint", "err", err)
 		err := cmn.Kill()
@@ -1502,7 +1499,7 @@ func (cs *ConsensusState) addProposalBlockPart(msg *BlockPartMessage, peerID p2p
 			return added, err
 		}
 		// NOTE: it's possible to receive complete proposal blocks for future rounds without having the proposal
-		cs.Logger.Info("Received complete proposal block", "height", cs.ProposalBlock.Height, "hash", cs.ProposalBlock.Hash())
+		cs.Logger.Info("### Received complete proposal block", "height", cs.ProposalBlock.Height, "hash", cs.ProposalBlock.Hash())
 		cs.eventBus.PublishEventCompleteProposal(cs.CompleteProposalEvent())
 
 		// Update Valid* if we can.
@@ -1752,7 +1749,7 @@ func (cs *ConsensusState) signVote(type_ types.SignedMsgType, hash []byte, heade
 	}
 	endTime := time.Now().UnixNano() / 1000000
 	err := cs.privValidator.SignVote(cs.state.ChainID, vote)
-	cs.Logger.Info("@@@ signVote", "height", cs.Height, "cost", endTime - startTime)
+	cs.Logger.Info("@@@ signVote", "height", cs.Height, "cost", endTime - startTime, "num", num)
 	return vote, err
 }
 
