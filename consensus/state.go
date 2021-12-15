@@ -12,6 +12,7 @@ import (
 	"runtime/debug"
 	"sync"
 	"time"
+	"unsafe"
 
 	cfg "github.com/tendermint/tendermint/config"
 	cstypes "github.com/tendermint/tendermint/consensus/types"
@@ -1489,10 +1490,12 @@ func (cs *ConsensusState) addProposalBlockPart(msg *BlockPartMessage, peerID p2p
 	}
 	if added && cs.ProposalBlockParts.IsComplete() {
 		// Added and completed!
+		size := len(cs.state.SideTxResponses)
+		maxSize := cs.state.ConsensusParams.Block.MaxBytes + int64(size) * 223 * int64(cs.state.Validators.Size())
 		_, err = cdc.UnmarshalBinaryLengthPrefixedReader(
 			cs.ProposalBlockParts.GetReader(),
 			&cs.ProposalBlock,
-			cs.state.ConsensusParams.Block.MaxBytes,
+			maxSize,
 		)
 		if err != nil {
 			cs.Logger.Error("### Generate block failed.", "H", cs.Height, "maxByte", cs.state.ConsensusParams.Block.MaxBytes, "err", err)
@@ -1744,6 +1747,11 @@ func (cs *ConsensusState) signVote(type_ types.SignedMsgType, hash []byte, heade
 				}
 			}
 			sideTxResults = append(sideTxResults, sideTxResponse.SideTxResult)
+			cs.Logger.Info("@@@ signVote",
+				"hashLen", len(sideTxResponse.SideTxResult.TxHash),
+				"SigLen", len(sideTxResponse.SideTxResult.Sig),
+				"Result", unsafe.Sizeof(sideTxResponse.SideTxResult.Result),
+				"total", unsafe.Sizeof(sideTxResponse.SideTxResult))
 		}
 		vote.SideTxResults = sideTxResults
 	}
