@@ -1749,7 +1749,7 @@ func (cs *ConsensusState) signVote(type_ types.SignedMsgType, hash []byte, heade
 	}
 	endTime := time.Now().UnixNano() / 1000000
 	err := cs.privValidator.SignVote(cs.state.ChainID, vote)
-	cs.Logger.Info("@@@ signVote", "height", cs.Height, "cost", endTime - startTime, "num", num)
+	cs.Logger.Info("@@@ signVote", "height", cs.Height, "cost", endTime - startTime, "len", len(cs.state.SideTxResponses), "num", num)
 	return vote, err
 }
 
