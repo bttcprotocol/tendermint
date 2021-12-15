@@ -4,22 +4,20 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/pkg/errors"
+	cfg "github.com/tendermint/tendermint/config"
+	cstypes "github.com/tendermint/tendermint/consensus/types"
 	cmn "github.com/tendermint/tendermint/libs/common"
+	tmevents "github.com/tendermint/tendermint/libs/events"
 	"github.com/tendermint/tendermint/libs/fail"
 	"github.com/tendermint/tendermint/libs/log"
+	"github.com/tendermint/tendermint/p2p"
+	sm "github.com/tendermint/tendermint/state"
+	"github.com/tendermint/tendermint/types"
 	tmtime "github.com/tendermint/tendermint/types/time"
 	"reflect"
 	"runtime/debug"
 	"sync"
 	"time"
-	"unsafe"
-
-	cfg "github.com/tendermint/tendermint/config"
-	cstypes "github.com/tendermint/tendermint/consensus/types"
-	tmevents "github.com/tendermint/tendermint/libs/events"
-	"github.com/tendermint/tendermint/p2p"
-	sm "github.com/tendermint/tendermint/state"
-	"github.com/tendermint/tendermint/types"
 )
 
 //-----------------------------------------------------------------------------
@@ -1491,7 +1489,7 @@ func (cs *ConsensusState) addProposalBlockPart(msg *BlockPartMessage, peerID p2p
 	if added && cs.ProposalBlockParts.IsComplete() {
 		// Added and completed!
 		size := len(cs.state.SideTxResponses)
-		maxSize := cs.state.ConsensusParams.Block.MaxBytes + int64(size) * 223 * int64(cs.state.Validators.Size())
+		maxSize := cs.state.ConsensusParams.Block.MaxBytes + int64(size) * 160 * int64(cs.state.Validators.Size())
 		_, err = cdc.UnmarshalBinaryLengthPrefixedReader(
 			cs.ProposalBlockParts.GetReader(),
 			&cs.ProposalBlock,
@@ -1747,17 +1745,15 @@ func (cs *ConsensusState) signVote(type_ types.SignedMsgType, hash []byte, heade
 				}
 			}
 			sideTxResults = append(sideTxResults, sideTxResponse.SideTxResult)
-			cs.Logger.Info("@@@ signVote",
-				"hashLen", len(sideTxResponse.SideTxResult.TxHash),
-				"SigLen", len(sideTxResponse.SideTxResult.Sig),
-				"Result", unsafe.Sizeof(sideTxResponse.SideTxResult.Result),
-				"total", unsafe.Sizeof(sideTxResponse.SideTxResult))
 		}
 		vote.SideTxResults = sideTxResults
 	}
 	endTime := time.Now().UnixNano() / 1000000
 	err := cs.privValidator.SignVote(cs.state.ChainID, vote)
-	cs.Logger.Info("@@@ signVote", "height", cs.Height, "cost", endTime - startTime, "len", len(cs.state.SideTxResponses), "num", num)
+	cost := endTime - startTime
+	if cost > 100 {
+		cs.Logger.Info("@@@ signVote", "height", cs.Height, "cost", cost, "sideTxSize", len(cs.state.SideTxResponses), "hasDataSize", num)
+	}
 	return vote, err
 }
 
