@@ -1488,12 +1488,12 @@ func (cs *ConsensusState) addProposalBlockPart(msg *BlockPartMessage, peerID p2p
 	}
 	if added && cs.ProposalBlockParts.IsComplete() {
 		// Added and completed!
-		size := len(cs.state.SideTxResponses)
-		maxSize := cs.state.ConsensusParams.Block.MaxBytes + int64(size) * 160 * int64(cs.state.Validators.Size())
+		//size := len(cs.state.SideTxResponses)
+		//maxSize := cs.state.ConsensusParams.Block.MaxBytes + int64(size) * 160 * int64(cs.state.Validators.Size())
 		_, err = cdc.UnmarshalBinaryLengthPrefixedReader(
 			cs.ProposalBlockParts.GetReader(),
 			&cs.ProposalBlock,
-			maxSize,
+			cs.state.ConsensusParams.Block.MaxBytes,
 		)
 		if err != nil {
 			cs.Logger.Error("### Generate block failed.", "H", cs.Height, "maxByte", cs.state.ConsensusParams.Block.MaxBytes, "err", err)
