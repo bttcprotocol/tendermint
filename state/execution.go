@@ -101,7 +101,7 @@ func (blockExec *BlockExecutor) CreateProposalBlock(
 	maxNumEvidence, _ := types.MaxEvidencePerBlock(maxBytes)
 	evidence := blockExec.evpool.PendingEvidence(maxNumEvidence)
 	size := len(commit.Precommits[0].SideTxResults)
-	txsMaxBytes := maxBytes - int64(size) * 160 * int64(state.Validators.Size())
+	txsMaxBytes := maxBytes - int64(size) * 120 * int64(state.Validators.Size())
 	// Fetch a limited amount of valid txs
 	maxDataBytes := types.MaxDataBytes(txsMaxBytes, state.Validators.Size(), len(evidence))
 	txs := blockExec.mempool.ReapMaxBytesMaxGas(maxDataBytes, maxGas)
